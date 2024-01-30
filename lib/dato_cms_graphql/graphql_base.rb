@@ -1,3 +1,5 @@
+require_relative "model_iterator"
+
 module DatoCmsGraphql
   class GraphqlBase
     class_attribute :graphql_page_size
@@ -52,7 +54,7 @@ module DatoCmsGraphql
       end
 
       def all
-        DatoCmsGraphql::ModelIterator.new(self)
+        ModelIterator.new(self)
       end
     end
 
