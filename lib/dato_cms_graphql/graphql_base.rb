@@ -52,7 +52,7 @@ module DatoCmsGraphql
       end
 
       def all
-        ModelIterator.new(self)
+        DatoCmsGraphql::ModelIterator.new(self)
       end
     end
 
