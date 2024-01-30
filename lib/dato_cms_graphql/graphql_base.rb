@@ -33,7 +33,7 @@ module DatoCmsGraphql
 
       def query_for
         parse <<~GRAPHQL
-          query($skip: Int) {
+          query($skip: IntType) {
             items: all#{plural_name}(first: #{graphql_page_size}, skip: $skip) {
               #{fields}
             }
