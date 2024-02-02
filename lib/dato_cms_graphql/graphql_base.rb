@@ -5,6 +5,7 @@ module DatoCmsGraphql
     class_attribute :graphql_page_size
     class_attribute :fields
     class_attribute :graphql_single_instance
+    class_attribute :bridgetown_render
 
     class << self
       def page_size(value)
@@ -13,6 +14,10 @@ module DatoCmsGraphql
 
       def single_instance(value)
         self.graphql_single_instance = value
+      end
+
+      def render(value)
+        self.bridgetown_render = value
       end
 
       def query_name
@@ -88,11 +93,16 @@ module DatoCmsGraphql
       def single_instance?
         graphql_single_instance || false
       end
+
+      def render?
+        bridgetown_render || false
+      end
     end
 
     attr_reader :attributes
     page_size(100) # Set the maximum page size as default.
     single_instance(false)
+    render(true)
 
     def initialize(attributes)
       @attributes = JSON.parse(attributes.to_json, object_class: OpenStruct)
