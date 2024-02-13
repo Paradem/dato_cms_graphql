@@ -37,12 +37,16 @@ module DatoCmsGraphql
         end
       end
 
+      def name
+        to_s.split("::").last
+      end
+
       def plural_name
-        to_s.pluralize
+        name.pluralize
       end
 
       def single_name
-        rv = to_s
+        rv = name
         rv[0] = rv[0].downcase
         rv
       end
