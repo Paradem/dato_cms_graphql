@@ -15,7 +15,7 @@ module DatoCmsGraphql
       0.upto(@pages) do |page|
         @results = DatoCmsGraphql.query(@query, variables: {skip: @page_size * page})
 
-        @results.each do |element|
+        @results.send(:"#{I18n.locale}_items").each do |element|
           yield @model.new(element)
         end
       end

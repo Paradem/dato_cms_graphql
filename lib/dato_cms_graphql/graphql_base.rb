@@ -56,21 +56,33 @@ module DatoCmsGraphql
       end
 
       def query_for
-        parse <<~GRAPHQL
-          query($skip: IntType) {
-            items: all#{plural_name}(first: #{graphql_page_size}, skip: $skip) {
+        localized_items = I18n.available_locales.map do |locale|
+          <<~GRAPHQL
+            #{locale}_items: all#{plural_name}(locale: #{locale}, first: #{graphql_page_size}, skip: $skip) {
               #{fields}
             }
+          GRAPHQL
+        end
+
+        parse <<~GRAPHQL
+          query($skip: IntType) {
+            #{localized_items.join("\n")} 
           }
         GRAPHQL
       end
 
       def query_for_single
-        parse <<~GRAPHQL
-          query {
-            item: #{single_name} {
+        localized_item = I18n.available_locales.map do |locale|
+          <<~GRAPHQL
+            #{locale}_item: #{single_name}(locale: #{locale}) {
               #{fields}
             }
+          GRAPHQL
+        end
+
+        parse <<~GRAPHQL
+          query {
+            #{localized_item.join("\n")} 
           }
         GRAPHQL
       end
@@ -109,16 +121,24 @@ module DatoCmsGraphql
     render(true)
 
     def initialize(attributes)
-      @attributes = JSON.parse(attributes.to_json, object_class: OpenStruct)
+      @attributes = attributes
+    end
+
+    def localized_attributes
+      if @attributes.respond_to?(:"#{I18n.locale}_item")
+        @attributes.send(:"#{I18n.locale}_item")
+      else
+        @attributes
+      end
     end
 
     def respond_to_missing?(method, *args)
-      @attributes.respond_to?(method)
+      localized_attributes.respond_to?(method)
     end
 
     def method_missing(method, *a, &block)
-      if @attributes.respond_to?(method)
-        @attributes.send(method, *a, &block)
+      if localized_attributes.respond_to?(method)
+        localized_attributes.send(method, *a, &block)
       else
         super
       end
