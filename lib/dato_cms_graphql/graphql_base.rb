@@ -58,7 +58,7 @@ module DatoCmsGraphql
       def query_for
         localized_items = I18n.available_locales.map do |locale|
           <<~GRAPHQL
-            #{locale}_items: all#{plural_name}(locale: #{locale}, first: #{graphql_page_size}, skip: $skip) {
+            #{locale}_items: all#{plural_name}(locale: #{locale}, fallbackLocales: [#{I18n.default_locale}"], first: #{graphql_page_size}, skip: $skip) {
               #{fields}
             }
           GRAPHQL
@@ -74,7 +74,7 @@ module DatoCmsGraphql
       def query_for_single
         localized_item = I18n.available_locales.map do |locale|
           <<~GRAPHQL
-            #{locale}_item: #{single_name}(locale: #{locale}) {
+            #{locale}_item: #{single_name}(locale: #{locale}, fallbackLocales: [#{I18n.default_locale}"]) {
               #{fields}
             }
           GRAPHQL
