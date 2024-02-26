@@ -103,7 +103,7 @@ module DatoCmsGraphql
       end
 
       def get
-        new(DatoCmsGraphql.query_one(self::SINGLE))
+        new(DatoCmsGraphql.query(self::SINGLE))
       end
 
       def single_instance?
@@ -121,7 +121,7 @@ module DatoCmsGraphql
     render(true)
 
     def initialize(attributes)
-      @attributes = attributes
+      @attributes = JSON.parse(attributes.to_json, object_class: OpenStruct)
     end
 
     def localized_attributes
