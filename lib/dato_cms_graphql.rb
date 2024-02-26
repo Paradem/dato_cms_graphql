@@ -34,19 +34,12 @@ module DatoCmsGraphql
     Client = GraphQL::Client.new(schema: Schema, execute: HTTP)
   end
 
-  def self._query(query, variables: {})
-    response = Client.query(query, variables: variables)
-    response.data.items
-  end
-
   def self.query(query, variables: {})
-    Client.query(query, variables: variables).data.items.map do |result|
-      result.to_h.deep_transform_keys { |k| k.underscore }
-    end
+    Client.query(query, variables: variables).data
   end
 
   def self.query_one(query, variables: {})
-    Client.query(query, variables: variables).data.item.to_h.deep_transform_keys { |k| k.underscore }
+    Client.query(query, variables: variables).data
   end
 
   def self.count(query, variables: {})

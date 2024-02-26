@@ -1,6 +1,7 @@
 module DatoCmsGraphql
   class Fields
     attr_accessor :rv
+
     def initialize(fields)
       @fields = fields
       @rv = ""
