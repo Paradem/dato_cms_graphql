@@ -18,6 +18,10 @@ class TestSchema < GraphQL::Schema
     field :count, IntTypeType, null: false
   end
 
+  class Locale < GraphQL::Schema::Enum
+    value "en", "a enum for english"
+  end
+
   class QueryType < GraphQL::Schema::Object
     field :int_type, IntTypeType, null: false
 
@@ -30,7 +34,9 @@ class TestSchema < GraphQL::Schema
 
     field :all_under_tests, PersonType, null: false do
       argument :skip, IntTypeType, required: false
+      argument :locale, Locale, required: false
       argument :first, IntTypeType, required: false
+      argument :fallback_locales, [Locale], required: false
     end
 
     def all_under_tests
