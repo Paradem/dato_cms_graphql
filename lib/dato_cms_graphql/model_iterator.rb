@@ -12,11 +12,20 @@ module DatoCmsGraphql
     end
 
     def each
-      0.upto(@pages) do |page|
-        @results = DatoCmsGraphql.query(@query, variables: {skip: @page_size * page})
+      results["#{I18n.locale}_items"].each do |element|
+        yield @model.new(element)
+      end
+    end
 
-        @results["#{I18n.locale}_items"].each do |element|
-          yield @model.new(element)
+    private
+
+    def results
+      @results ||= (0..@pages).each_with_object({}) do |page, rs|
+        res_page = DatoCmsGraphql.query(@query, variables: {skip: @page_size * page})
+
+        res_page.each do |k, v|
+          rs[k] ||= []
+          rs[k].concat(v)
         end
       end
     end
