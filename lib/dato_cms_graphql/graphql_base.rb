@@ -121,7 +121,7 @@ module DatoCmsGraphql
     render(true)
 
     def initialize(attributes)
-      @attributes = attributes
+      @attributes = JSON.parse(attributes.to_json, object_class: OpenStruct)
     end
 
     def localized_attributes

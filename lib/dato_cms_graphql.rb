@@ -35,7 +35,7 @@ module DatoCmsGraphql
   end
 
   def self.query(query, variables: {})
-    Client.query(query, variables: variables).data
+    Client.query(query, variables: variables).data.to_h.deep_transform_keys(&:underscore)
   end
 
   def self.count(query, variables: {})
