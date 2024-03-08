@@ -60,6 +60,12 @@ module DatoCmsGraphql
           <<~GRAPHQL
             #{locale}_items: all#{plural_name}(locale: #{locale}, fallbackLocales: [#{I18n.default_locale}], first: #{graphql_page_size}, skip: $skip) {
               #{fields}
+
+              _seoMetaTags {
+                tag
+                content
+                attributes
+              }
             }
           GRAPHQL
         end
@@ -76,6 +82,12 @@ module DatoCmsGraphql
           <<~GRAPHQL
             #{locale}_item: #{single_name}(locale: #{locale}, fallbackLocales: [#{I18n.default_locale}]) {
               #{fields}
+
+              _seoMetaTags {
+                tag
+                content
+                attributes
+              }
             }
           GRAPHQL
         end
