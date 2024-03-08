@@ -18,7 +18,8 @@ module DatoCmsGraphql
 
   if ENV["TEST"] == "true"
     Client = GraphQL::Client.new(schema: TestSchema, execute: TestSchema)
-  else
+  elsif ENV["DATO_API_TOKEN"].present?
+
     HTTP = GraphQL::Client::HTTP.new("https://graphql.datocms.com") do
       def headers(context)
         {
@@ -32,6 +33,8 @@ module DatoCmsGraphql
 
     Schema = GraphQL::Client.load_schema(HTTP)
     Client = GraphQL::Client.new(schema: Schema, execute: HTTP)
+  else
+    puts "DATO_API_TOKEN not present"
   end
 
   def self.query(query, variables: {})
