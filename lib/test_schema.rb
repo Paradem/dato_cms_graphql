@@ -9,9 +9,16 @@ class TestSchema < GraphQL::Schema
     end
   end
 
+  class TagType < GraphQL::Schema::Object
+    field :tag, String, null: true
+    field :content, String, null: true
+    field :attributes, String, null: true
+  end
+
   class PersonType < GraphQL::Schema::Object
     field :id, String, null: true
     field :name, String, null: true
+    field :_seo_meta_tags, [TagType], null: false
   end
 
   class MetaType < GraphQL::Schema::Object
@@ -42,7 +49,8 @@ class TestSchema < GraphQL::Schema
     def all_under_tests
       OpenStruct.new(
         id: "test",
-        name: "Stan"
+        name: "Stan",
+        _seo_meta_tags: []
       )
     end
   end
