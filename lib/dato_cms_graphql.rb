@@ -10,6 +10,10 @@ require "graphql/client/http"
 require_relative "dato_cms_graphql/version"
 require_relative "dato_cms_graphql/fields"
 require_relative "dato_cms_graphql/graphql_base"
+require_relative "dato_cms_graphql/rails"
+require_relative "dato_cms_graphql/rails/routing"
+require_relative "dato_cms_graphql/rails/persistence"
+require_relative "dato_cms_graphql/rails/cache_table"
 
 require_relative "test_schema"
 
@@ -43,5 +47,13 @@ module DatoCmsGraphql
 
   def self.count(query, variables: {})
     Client.query(query, variables: variables).data.meta_data.count
+  end
+
+  def self.queries
+    ObjectSpace.each_object(::Class).select { |klass| klass < DatoCmsGraphql::GraphqlBase }
+  end
+
+  def self.renderable
+    queries.select(&:render?)
   end
 end

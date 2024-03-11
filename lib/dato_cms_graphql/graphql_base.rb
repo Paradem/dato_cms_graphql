@@ -20,10 +20,6 @@ module DatoCmsGraphql
         self.bridgetown_render = value
       end
 
-      def query_name
-        to_s.humanize.pluralize
-      end
-
       def graphql_fields(*args)
         self.fields = Fields.new(args).to_query
         initialize_queries
@@ -37,18 +33,16 @@ module DatoCmsGraphql
         end
       end
 
-      def name
-        to_s.split("::").last
+      def query_name
+        name.gsub("Query", "")
       end
 
       def plural_name
-        name.pluralize
+        query_name.pluralize
       end
 
       def single_name
-        rv = name
-        rv[0] = rv[0].downcase
-        rv
+        query_name.camelize(:lower)
       end
 
       def parse(query)
@@ -125,6 +119,10 @@ module DatoCmsGraphql
       def render?
         bridgetown_render || false
       end
+
+      def route
+        ":permalink"
+      end
     end
 
     attr_reader :attributes
@@ -132,7 +130,12 @@ module DatoCmsGraphql
     single_instance(false)
     render(true)
 
+    def route
+      self.class.route.gsub(":permalink", permalink)
+    end
+
     def initialize(attributes)
+      @raw_attributes = attributes
       @attributes = JSON.parse(attributes.to_json, object_class: OpenStruct)
     end
 
@@ -141,6 +144,14 @@ module DatoCmsGraphql
         @attributes.send(:"#{I18n.locale}_item")
       else
         @attributes
+      end
+    end
+
+    def localized_raw_attributes
+      if @raw_attributes.has_key?("#{I18n.locale}_item")
+        @raw_attributes.dig("#{I18n.locale}_item")
+      else
+        @raw_attributes
       end
     end
 
