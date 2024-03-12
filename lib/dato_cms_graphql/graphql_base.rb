@@ -34,7 +34,7 @@ module DatoCmsGraphql
       end
 
       def query_name
-        name.gsub("Query", "")
+        name.split("::").last.gsub("Query", "")
       end
 
       def plural_name
