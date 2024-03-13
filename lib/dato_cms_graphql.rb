@@ -10,12 +10,19 @@ require "graphql/client/http"
 require_relative "dato_cms_graphql/version"
 require_relative "dato_cms_graphql/fields"
 require_relative "dato_cms_graphql/base_query"
-require_relative "dato_cms_graphql/rails"
-require_relative "dato_cms_graphql/rails/routing"
-require_relative "dato_cms_graphql/rails/persistence"
-require_relative "dato_cms_graphql/rails/cache_table"
 
 require_relative "test_schema"
+
+if defined?(::Rails)
+  require_relative "dato_cms_graphql/rails/routing"
+  require_relative "dato_cms_graphql/rails/persistence"
+  require_relative "dato_cms_graphql/rails/cache_table"
+end
+
+if defined?(::Bridgetown)
+  require_relative "dato_cms_graphql/bridgetown/query_builder"
+  require_relative "dato_cms_graphql/bridgetown/initializer"
+end
 
 module DatoCmsGraphql
   class Error < StandardError; end
@@ -49,14 +56,16 @@ module DatoCmsGraphql
   end
 
   def self.queries
-    raise "DatoCmsGraphql.path_to_queries has not been set with the path to your queries" if @path_to_queries.nil?
-    raise "\"#{@path_to_queries}\" does not exist" unless File.exist?(@path_to_queries)
+    @queries ||= begin
+      raise "DatoCmsGraphql.path_to_queries has not been set with the path to your queries" if @path_to_queries.nil?
+      raise "\"#{@path_to_queries}\" does not exist" unless File.exist?(@path_to_queries)
 
-    Dir[File.join(@path_to_queries, "*.rb")].sort.each { require(_1) }
-    ObjectSpace.each_object(::Class)
-      .select { |klass| klass < DatoCmsGraphql::BaseQuery }
-      .group_by(&:name).values.map { |values| values.max_by(&:object_id) }
-      .flatten
+      Dir[File.join(@path_to_queries, "*.rb")].sort.each { require(_1) }
+      ObjectSpace.each_object(::Class)
+        .select { |klass| klass < DatoCmsGraphql::BaseQuery }
+        .group_by(&:name).values.map { |values| values.max_by(&:object_id) }
+        .flatten
+    end
   end
 
   def self.path_to_queries=(value)
