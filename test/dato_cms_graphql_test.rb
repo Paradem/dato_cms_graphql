@@ -16,5 +16,6 @@ class DatoCmsGraphqlTest < Minitest::Test
   def test_queries_path_can_be_set
     DatoCmsGraphql.path_to_queries = "/app/queries"
     assert_equal DatoCmsGraphql.path_to_queries, "/app/queries"
+    DatoCmsGraphql.path_to_queries = nil
   end
 end
