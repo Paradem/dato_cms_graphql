@@ -1,2 +1,0 @@
-module DatoCmsGraphql::Rails
-end
