@@ -10,11 +10,19 @@ require "graphql/client/http"
 require_relative "dato_cms_graphql/version"
 require_relative "dato_cms_graphql/fields"
 require_relative "dato_cms_graphql/base_query"
-require_relative "dato_cms_graphql/rails/routing"
-require_relative "dato_cms_graphql/rails/persistence"
-require_relative "dato_cms_graphql/rails/cache_table"
 
 require_relative "test_schema"
+
+if defined?(::Rails)
+  require_relative "dato_cms_graphql/rails/routing"
+  require_relative "dato_cms_graphql/rails/persistence"
+  require_relative "dato_cms_graphql/rails/cache_table"
+end
+
+if defined?(::Bridgetown)
+  require_relative "dato_cms_graphql/bridgetown/query_builder"
+  require_relative "dato_cms_graphql/bridgetown/initializer"
+end
 
 module DatoCmsGraphql
   class Error < StandardError; end
