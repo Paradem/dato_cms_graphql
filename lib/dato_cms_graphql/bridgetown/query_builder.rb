@@ -12,18 +12,33 @@ module DatoCmsGraphql::Bridgetown
             site.data[query.plural_name.underscore] = results
 
             if query.render?
-              results.each do |item|
-                add_resource query.plural_name.underscore, "#{item.id}.erb" do
-                  result item
-                  permalink "#{item.permalink}/"
-                  title item.title
-                  layout query.single_name.underscore
-                  content ""
+              I18n.available_locales.each do |locale|
+                I18n.with_locale(locale) do
+                  query.all.each do |item|
+                    permalink = "#{locale_path(locale)}#{item.permalink}/"
+
+                    add_resource query.plural_name.underscore, "#{item.id}.erb" do
+                      result item
+                      permalink permalink
+                      title item.title
+                      locale locale
+                      layout query.single_name.underscore
+                      content ""
+                    end
+                  end
                 end
               end
             end
           end
         end
+      end
+    end
+
+    def locale_path(locale)
+      if locale == I18n.default_locale && !Bridgetown.configuration.prefix_default_locale
+        ""
+      else
+        "#{locale}/"
       end
     end
   end
