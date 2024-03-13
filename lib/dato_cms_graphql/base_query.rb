@@ -1,11 +1,11 @@
 require_relative "model_iterator"
 
 module DatoCmsGraphql
-  class GraphqlBase
+  class BaseQuery
     class_attribute :graphql_page_size
     class_attribute :fields
     class_attribute :graphql_single_instance
-    class_attribute :bridgetown_render
+    class_attribute :renderable
 
     class << self
       def page_size(value)
@@ -17,7 +17,7 @@ module DatoCmsGraphql
       end
 
       def render(value)
-        self.bridgetown_render = value
+        self.renderable = value
       end
 
       def graphql_fields(*args)
@@ -117,7 +117,7 @@ module DatoCmsGraphql
       end
 
       def render?
-        bridgetown_render || false
+        renderable || false
       end
 
       def route
