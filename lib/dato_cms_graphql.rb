@@ -9,7 +9,7 @@ require "graphql/client/http"
 
 require_relative "dato_cms_graphql/version"
 require_relative "dato_cms_graphql/fields"
-require_relative "dato_cms_graphql/graphql_base"
+require_relative "dato_cms_graphql/base_query"
 require_relative "dato_cms_graphql/rails"
 require_relative "dato_cms_graphql/rails/routing"
 require_relative "dato_cms_graphql/rails/persistence"
@@ -23,7 +23,6 @@ module DatoCmsGraphql
   if ENV["TEST"] == "true"
     Client = GraphQL::Client.new(schema: TestSchema, execute: TestSchema)
   elsif ENV["DATO_API_TOKEN"].present?
-
     HTTP = GraphQL::Client::HTTP.new("https://graphql.datocms.com") do
       def headers(context)
         {
@@ -55,7 +54,7 @@ module DatoCmsGraphql
 
     Dir[File.join(@path_to_queries, "*.rb")].sort.each { require(_1) }
     ObjectSpace.each_object(::Class)
-      .select { |klass| klass < DatoCmsGraphql::GraphqlBase }
+      .select { |klass| klass < DatoCmsGraphql::BaseQuery }
       .group_by(&:name).values.map { |values| values.max_by(&:object_id) }
       .flatten
   end

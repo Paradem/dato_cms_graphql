@@ -1,6 +1,6 @@
 require "test_helper"
 
-class UnderTest < DatoCmsGraphql::GraphqlBase
+class UnderTest < DatoCmsGraphql::BaseQuery
   graphql_fields(
     :id
   )

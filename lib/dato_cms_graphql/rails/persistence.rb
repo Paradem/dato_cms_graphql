@@ -7,7 +7,7 @@ module DatoCmsGraphql::Rails::Persistence
       )
       .update(
         render: query.render?,
-        permalink: record.permalink,
+        permalink: (record.permalink if record.respond_to?(:permalink)),
         cms_record: record.localized_raw_attributes
       )
   end
