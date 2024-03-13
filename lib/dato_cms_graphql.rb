@@ -17,6 +17,7 @@ if defined?(::Rails)
   require_relative "dato_cms_graphql/rails/routing"
   require_relative "dato_cms_graphql/rails/persistence"
   require_relative "dato_cms_graphql/rails/cache_table"
+  require_relative "dato_cms_graphql/rails/railtie"
 end
 
 if defined?(::Bridgetown)
@@ -57,15 +58,19 @@ module DatoCmsGraphql
 
   def self.queries
     @queries ||= begin
-      raise "DatoCmsGraphql.path_to_queries has not been set with the path to your queries" if @path_to_queries.nil?
-      raise "\"#{@path_to_queries}\" does not exist" unless File.exist?(@path_to_queries)
+      raise "DatoCmsGraphql.path_to_queries has not been set with the path to your queries" if path_to_queries.nil?
+      raise "\"#{path_to_queries}\" does not exist" unless File.exist?(path_to_queries)
 
-      Dir[File.join(@path_to_queries, "*.rb")].sort.each { require(_1) }
+      Dir[File.join(path_to_queries, "*.rb")].sort.each { require(_1) }
       ObjectSpace.each_object(::Class)
         .select { |klass| klass < DatoCmsGraphql::BaseQuery }
         .group_by(&:name).values.map { |values| values.max_by(&:object_id) }
         .flatten
     end
+  end
+
+  def self.path_to_queries
+    @path_to_queries
   end
 
   def self.path_to_queries=(value)
