@@ -48,14 +48,16 @@ module DatoCmsGraphql
   end
 
   def self.queries
-    raise "DatoCmsGraphql.path_to_queries has not been set with the path to your queries" if @path_to_queries.nil?
-    raise "\"#{@path_to_queries}\" does not exist" unless File.exist?(@path_to_queries)
+    @queries ||= begin
+      raise "DatoCmsGraphql.path_to_queries has not been set with the path to your queries" if @path_to_queries.nil?
+      raise "\"#{@path_to_queries}\" does not exist" unless File.exist?(@path_to_queries)
 
-    Dir[File.join(@path_to_queries, "*.rb")].sort.each { require(_1) }
-    ObjectSpace.each_object(::Class)
-      .select { |klass| klass < DatoCmsGraphql::BaseQuery }
-      .group_by(&:name).values.map { |values| values.max_by(&:object_id) }
-      .flatten
+      Dir[File.join(@path_to_queries, "*.rb")].sort.each { require(_1) }
+      ObjectSpace.each_object(::Class)
+        .select { |klass| klass < DatoCmsGraphql::BaseQuery }
+        .group_by(&:name).values.map { |values| values.max_by(&:object_id) }
+        .flatten
+    end
   end
 
   def self.path_to_queries=(value)
