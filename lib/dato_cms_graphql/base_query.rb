@@ -46,7 +46,7 @@ module DatoCmsGraphql
       end
 
       def parse(query)
-        DatoCmsGraphql::Client.parse(query)
+        DatoCmsGraphql::Client.parse(query) if defined?(DatoCmsGraphql::Client)
       end
 
       def query_for
