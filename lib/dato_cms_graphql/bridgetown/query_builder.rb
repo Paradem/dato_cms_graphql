@@ -35,7 +35,7 @@ module DatoCmsGraphql::Bridgetown
     end
 
     def locale_path(locale)
-      if locale == I18n.default_locale && !Bridgetown.configuration.prefix_default_locale
+      if locale == I18n.default_locale && !::Bridgetown.configuration.prefix_default_locale
         ""
       else
         "#{locale}/"
