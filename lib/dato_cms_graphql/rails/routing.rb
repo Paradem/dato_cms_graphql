@@ -8,7 +8,7 @@ module DatoCmsGraphql::Rails
             controller = query.plural_name.underscore
 
             if query.route.blank?
-              root "#{controller}#show"
+              next
             else
               get(
                 query.route,
