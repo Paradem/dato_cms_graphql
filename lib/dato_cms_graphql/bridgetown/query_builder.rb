@@ -15,7 +15,7 @@ module DatoCmsGraphql::Bridgetown
               I18n.available_locales.each do |locale|
                 I18n.with_locale(locale) do
                   query.all.each do |item|
-                    permalink = "#{locale_path(locale)}#{item.permalink}/"
+                    permalink = "#{locale_path(locale)}#{item.permalink}/".gsub("//", "/")
 
                     add_resource query.plural_name.underscore, "#{item.id}.erb" do
                       result item
