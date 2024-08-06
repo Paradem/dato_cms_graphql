@@ -1,4 +1,5 @@
 require_relative "model_iterator"
+require "ostruct"
 
 module DatoCmsGraphql
   class BaseQuery
@@ -66,7 +67,7 @@ module DatoCmsGraphql
 
         parse <<~GRAPHQL
           query($skip: IntType) {
-            #{localized_items.join("\n")} 
+            #{localized_items.join("\n")}
           }
         GRAPHQL
       end
@@ -88,7 +89,7 @@ module DatoCmsGraphql
 
         parse <<~GRAPHQL
           query {
-            #{localized_item.join("\n")} 
+            #{localized_item.join("\n")}
           }
         GRAPHQL
       end
