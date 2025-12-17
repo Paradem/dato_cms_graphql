@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 module DatoCmsGraphql
   class Fields
     attr_accessor :rv
 
     def initialize(fields)
       @fields = fields
-      @rv = ""
+      @rv = +""
     end
 
     def to_query
@@ -15,7 +17,8 @@ module DatoCmsGraphql
     end
 
     def output_string(field, depth, key: false)
-      rv << "  " * depth
+      indent = "  " * depth
+      rv << indent
       rv << field.to_s[0] << field.to_s[1..].camelize(:lower)
       rv << "\n" unless key
     end
