@@ -1,6 +1,6 @@
 # DatoCmsGraphql
 
-[![Ruby Version](https://img.shields.io/badge/ruby-2.7%2B-brightgreen)](https://www.ruby-lang.org/en/)
+[![Ruby Version](https://img.shields.io/badge/ruby-3.2%2B-brightgreen)](https://www.ruby-lang.org/en/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A Ruby gem that simplifies integrating DatoCMS GraphQL API into Rails applications, enabling dynamic route generation, content caching, and seamless query building for headless CMS functionality.
@@ -42,6 +42,12 @@ bundle install
 ```
 
 Note: This gem is not yet published to RubyGems.org. Install from GitHub until release.
+
+## Requirements
+
+- Ruby 3.2.0 or higher (tested with Ruby 3.4.5)
+- Bundler for dependency management
+- A DatoCMS account with GraphQL API access
 
 ## Configuration
 
@@ -92,11 +98,21 @@ Set the following environment variables:
    rails db:migrate
    ```
 
-5. Cache DatoCMS data:
+ 5. Cache DatoCMS data:
 
-   ```bash
-   rake dato_cms:cache
-   ```
+    ```bash
+    rake dato_cms:cache
+    ```
+
+### Manual Setup (Non-Rails)
+
+For non-Rails environments or manual configuration:
+
+```ruby
+DatoCmsGraphql.path_to_queries = "/path/to/your/queries"
+```
+
+This sets the path where query classes are loaded from, as demonstrated in the tests.
 
 ### Routes Configuration
 
@@ -139,8 +155,17 @@ class NewsQuery < DatoCmsGraphql::BaseQuery
         "... on ImageRecord": [image: [:url, :alt]]
       ]
     ]
-  )
+   )
 end
+```
+
+After defining fields, query instances provide access to attributes:
+
+```ruby
+# Assuming attributes from a query result
+attributes = {"id" => "aOgVuOkbTpKl56nHftl3FA", ...}
+news_item = NewsQuery.new(attributes.deep_transform_keys(&:underscore))
+puts news_item.id  # => "aOgVuOkbTpKl56nHftl3FA"
 ```
 
 ### Query Options
@@ -198,6 +223,11 @@ end
 - `query(graphql_string, variables: {})`: Executes a raw GraphQL query.
 - `count(query, variables: {})`: Gets total count for a query.
 
+### DatoCmsGraphql::Fields
+
+- `new(fields_array)`: Initializes with an array of fields (symbols/strings/hashes).
+- `to_query`: Generates a GraphQL query string from the fields structure.
+
 ### Rails Modules
 
 - `DatoCmsGraphql::Rails::Routing.draw_routes(base_class)`: Generates routes.
@@ -231,6 +261,23 @@ class PageQuery < DatoCmsGraphql::BaseQuery
     "pages/:permalink"
   end
 end
+```
+
+### Manual GraphQL Query Generation
+
+Use the `Fields` class for direct query string generation:
+
+```ruby
+fields = [
+  :id, :title,
+  :permalink, :_status,
+  :_first_published_at,
+  interview_location: [:latitude, :longitude],
+  featured_image: [colors: [:alpha]]
+]
+
+query_string = DatoCmsGraphql::Fields.new(fields).to_query
+# Generates: id\ntitle\npermalink\n_status\n_firstPublishedAt\ninterviewLocation {\n  latitude\n  longitude\n}\nfeaturedImage {\n  colors {\n    alpha\n  }\n}\n
 ```
 
 ### Caching Task
