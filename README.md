@@ -206,6 +206,38 @@ class NewsController < ApplicationController
 end
 ```
 
+### Error Handling
+
+Handle API failures and invalid configurations:
+
+```ruby
+# From tests: Simulate API errors
+begin
+  DatoCmsGraphql.query("invalid query")
+rescue GraphQL::Client::Error
+  # Handle gracefully, e.g., fallback to cached data
+end
+```
+
+### Concurrency Support
+
+Use in multi-threaded apps safely:
+
+```ruby
+# From concurrency tests: Thread-safe query loading
+Thread.new { DatoCmsGraphql.queries }.join
+```
+
+### Rails-Specific Features
+
+Leverage caching and dynamic routing:
+
+```ruby
+# From Rails integration tests: Cache and route setup
+rake dato_cms:cache  # Sync data
+# Routes auto-generated: /news/:permalink, /pages/:permalink, etc.
+```
+
 ## API Reference
 
 ### DatoCmsGraphql::BaseQuery

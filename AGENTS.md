@@ -79,3 +79,35 @@ query = DatoCmsGraphql::Fields.new(fields).to_query
 ### Controllers and Routing
 - In Rails controllers: `@news = News.find_by(locale: I18n.locale, permalink: params[:permalink])`.
 - Routes are auto-generated based on query classes.
+
+### Error Handling and API Failures (from tests)
+Handle API errors gracefully:
+```ruby
+begin
+  result = DatoCmsGraphql.query("query { invalidField }")
+rescue GraphQL::Client::Error => e
+  # Log or handle API failures (e.g., invalid token, network issues)
+  puts "API Error: #{e.message}"
+end
+```
+
+### Concurrency and Thread Safety (from concurrency tests)
+Use the gem in multi-threaded environments:
+```ruby
+threads = []
+5.times do
+  threads << Thread.new { DatoCmsGraphql.queries }  # Safe concurrent loading
+end
+threads.each(&:join)
+```
+
+### Rails Integration with Caching and Routing (from Rails integration tests)
+In Rails apps, handle locale-specific routing and caching:
+```ruby
+# Automatic route generation for localized content
+I18n.locale = :fr
+routes = Rails.application.routes.routes  # Includes /news/:permalink for each locale
+
+# Cache data for performance
+rake dato_cms:cache  # Persists data to avoid API calls
+```
