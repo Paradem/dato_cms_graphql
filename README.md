@@ -168,6 +168,37 @@ news_item = NewsQuery.new(attributes.deep_transform_keys(&:underscore))
 puts news_item.id  # => "aOgVuOkbTpKl56nHftl3FA"
 ```
 
+### Querying Structured Text Fields
+
+DatoCMS structured text fields allow editors to create rich content with formatting, links, and embedded blocks (e.g., images, CTAs, carousels). Content is stored as a JSON Abstract Syntax Tree (AST) with separate `blocks` and `links` arrays for embedded records.
+
+To query structured text, use nested hashes in `graphql_fields` for blocks and links:
+
+```ruby
+class PageQuery < DatoCmsGraphql::BaseQuery
+  graphql_fields(
+    :id, :title, :permalink,
+    content: [
+      :value,  # JSON AST for text content
+      blocks: [
+        __typename,  # Required for block type identification
+        "... on RecordInterface": [:id],  # Base fields for all blocks
+        "... on ImageRecord": [image: [:url, :alt, :title]],
+        "... on CtaBlockRecord": [:label, :url],  # Example custom block
+        "... on CarouselBlockRecord": [gallery: [:url]]  # Another custom block
+      ],
+      links: [
+        __typename,
+        "... on RecordInterface": [:id],
+        "... on BlogPostRecord": [:slug, :title]  # Linked records
+      ]
+    ]
+  )
+end
+```
+
+For rendering structured text as HTML, use DatoCMS's rendering libraries (e.g., `datocms-structured-text-to-html-string` for Ruby/Node.js). The gem provides raw data access only.
+
 ### Query Options
 
 - **Page Size**: Set `page_size(50)` for pagination.
@@ -190,6 +221,25 @@ puts home.title
 # Access nested attributes
 news_item.photos.each do |photo|
   puts photo.url
+end
+
+# Access structured text data
+page = PageQuery.get
+puts page.content.value  # JSON AST (e.g., {"type": "root", "children": [...]})
+
+# Iterate over embedded blocks
+page.content.blocks.each do |block|
+  case block.__typename
+  when "ImageRecord"
+    puts "Image: #{block.image.url}"
+  when "CtaBlockRecord"
+    puts "CTA: #{block.label} -> #{block.url}"
+  end
+end
+
+# Access linked records
+page.content.links.each do |link|
+  puts "Linked post: #{link.title}" if link.__typename == "BlogPostRecord"
 end
 ```
 
@@ -259,6 +309,7 @@ rake dato_cms:cache  # Sync data
 
 - `new(fields_array)`: Initializes with an array of fields (symbols/strings/hashes).
 - `to_query`: Generates a GraphQL query string from the fields structure.
+- Supports structured text queries via nested hashes for blocks/links (e.g., `blocks: ['... on BlockRecord': [:field]]`).
 
 ### Rails Modules
 
