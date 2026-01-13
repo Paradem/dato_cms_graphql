@@ -5,8 +5,10 @@ module DatoCmsGraphql
         load File.join(__dir__, "cache_task.rake")
       end
       initializer "dato_cms_graphql_railtie.configure_rails_initialization" do |app|
-        DatoCmsGraphql.path_to_queries = app.root.join("app", "queries")
-        puts DatoCmsGraphql.path_to_queries
+        unless ENV["TEST"] == "true"
+          DatoCmsGraphql.path_to_queries = app.root.join("app", "queries")
+          puts DatoCmsGraphql.path_to_queries
+        end
       end
     end
   end

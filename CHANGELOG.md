@@ -1,3 +1,13 @@
+## [0.3.0] - 2026-01-13
+
+- Update gem to support Rails 8 for improved compatibility
+- Add documentation enhancements and usage examples in AGENTS.md
+- Update tests and documentation for better coverage and onboarding
+- Fix warnings in tests related to string handling and deprecations
+- Bump supported Ruby versions for broader compatibility
+- Require ostruct as a runtime dependency for Ruby 3.4+ stdlib compatibility
+- Clear out unnecessary extra slashes in query paths
+
 ## [0.2.8] - 2025-12-17
 
 - Add ostruct and logger as runtime dependencies for Ruby 3.4+ stdlib compatibility
