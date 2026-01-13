@@ -1,16 +1,30 @@
 module DatoCmsGraphql::Rails
   module Persistence
     def self.persist_record(query, record)
-      Object.const_get(query.query_name)
-        .find_or_create_by(
-          locale: I18n.locale,
-          cms_id: record.id
-        )
-        .update(
+      return if record.id.nil?
+
+      cms_id = record.id
+      existing = Record.find_by(
+        type: query.query_name,
+        locale: I18n.locale,
+        cms_id: cms_id
+      )
+      if existing
+        existing.update(
           render: query.render?,
           permalink: (record.permalink if record.respond_to?(:permalink)),
           cms_record: record.localized_raw_attributes
         )
+      else
+        Record.create(
+          type: query.query_name,
+          locale: I18n.locale,
+          cms_id: cms_id,
+          render: query.render?,
+          permalink: (record.permalink if record.respond_to?(:permalink)),
+          cms_record: record.localized_raw_attributes
+        )
+      end
     end
 
     def self.cache_data
@@ -21,7 +35,7 @@ module DatoCmsGraphql::Rails
               record = query.get
               persist_record(query, record)
             else
-              query.all.each do |record|
+              query.all.uniq { |r| r.id }.each do |record|
                 persist_record(query, record)
               end
             end
