@@ -6,3 +6,5 @@ ENV["TEST"] = "true"
 require "dato_cms_graphql"
 
 require "minitest/autorun"
+require "webmock/minitest"
+require "mocha/minitest"

@@ -35,8 +35,10 @@ Gem::Specification.new do |spec|
   # Uncomment to register a new dependency of your gem
   # spec.add_dependency "example-gem", "~> 1.0"
   #
-  spec.add_dependency "graphql-client", "~> 0.23.0"
-  spec.add_dependency "activesupport", "~> 7.1.3"
+  spec.add_dependency "activesupport", ">= 7.1", "< 9.0"
+  spec.add_dependency "graphql-client", ">= 0.24.0", "< 1.0"
+  spec.add_dependency "logger"
+  spec.add_dependency "ostruct"
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html
