@@ -9,7 +9,7 @@ gem "rake", "~> 13.0"
 
 gem "minitest", "~> 5.21"
 
-gem "standard", "~> 1.3"
+gem "standard", "~> 1.53"
 
 group :test do
   gem "webmock"
