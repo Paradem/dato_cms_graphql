@@ -4,7 +4,7 @@ module DatoCmsGraphql::Rails
       ::Rails.application.routes.draw do
         scope "(:locale)", locale: I18n.default_locale do
           # Queries that represent collections of pages.
-          DatoCmsGraphql.renderable.select { |q| !q.route.blank? }.each do |query|
+          DatoCmsGraphql.renderable.reject { |q| q.route.blank? || q.route == "/" }.each do |query|
             controller = query.plural_name.underscore
             get(
               query.route,
@@ -13,7 +13,7 @@ module DatoCmsGraphql::Rails
             )
           end
 
-          home = DatoCmsGraphql.renderable.find { |q| q.route.blank? }
+          home = DatoCmsGraphql.renderable.find { |q| q.route == "/" }
           root "#{home.plural_name.underscore}#show"
         end
       end
