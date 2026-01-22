@@ -4,6 +4,8 @@ PATH
     dato_cms_graphql (0.2.7)
       activesupport (>= 7.1, < 9.0)
       graphql-client (~> 0.23.0)
+      logger
+      ostruct
 
 GEM
   remote: https://rubygems.org/
@@ -34,12 +36,16 @@ GEM
     json (2.7.1)
     language_server-protocol (3.17.0.3)
     lint_roller (1.1.0)
-    minitest (5.21.2)
+    logger (1.7.0)
+    minitest (6.0.1)
+      prism (~> 1.5)
     mutex_m (0.2.0)
+    ostruct (0.6.3)
     parallel (1.24.0)
     parser (3.3.0.5)
       ast (~> 2.4.1)
       racc
+    prism (1.8.0)
     racc (1.7.3)
     rainbow (3.1.1)
     rake (13.1.0)
@@ -85,7 +91,7 @@ PLATFORMS
 
 DEPENDENCIES
   dato_cms_graphql!
-  minitest (~> 5.16)
+  minitest
   rake (~> 13.0)
   standard (~> 1.3)
 

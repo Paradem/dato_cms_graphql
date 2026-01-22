@@ -4,7 +4,7 @@ module DatoCmsGraphql
 
     def initialize(fields)
       @fields = fields
-      @rv = ""
+      @rv = +""
     end
 
     def to_query

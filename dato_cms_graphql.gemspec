@@ -37,6 +37,8 @@ Gem::Specification.new do |spec|
   #
   spec.add_dependency "graphql-client", "~> 0.23.0"
   spec.add_dependency "activesupport", ">= 7.1", "< 9.0"
+  spec.add_dependency "ostruct"
+  spec.add_dependency "logger"
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html
