@@ -14,7 +14,9 @@ module DatoCmsGraphql::Rails
           end
 
           home = DatoCmsGraphql.renderable.find { |q| q.route == "/" }
-          root "#{home.plural_name.underscore}#show"
+          if home.present?
+            root "#{home.plural_name.underscore}#show"
+          end
         end
       end
     end
