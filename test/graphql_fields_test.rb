@@ -38,8 +38,6 @@ class GraphqlFieldsTest < Minitest::Test
       }
     GRAPHQL
 
-    # puts Fields.new(fields).to_query
-
     assert_equal fields_str, DatoCmsGraphql::Fields.new(fields).to_query
     assert true
   end
