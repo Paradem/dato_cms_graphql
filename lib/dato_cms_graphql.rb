@@ -13,7 +13,7 @@ require_relative "dato_cms_graphql/base_query"
 
 require_relative "test_schema"
 
-if defined?(::Rails)
+if defined?(::Rails::Application)
   require_relative "dato_cms_graphql/rails/routing"
   require_relative "dato_cms_graphql/rails/persistence"
   require_relative "dato_cms_graphql/rails/cache_table"
