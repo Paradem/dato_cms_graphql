@@ -22,6 +22,7 @@ module DatoCmsGraphql::Bridgetown
                       permalink permalink
                       title item.title
                       locale locale
+                      publish_date item.publish_date
                       layout query.single_name.underscore
                       content ""
                     end
