@@ -7,6 +7,7 @@ module DatoCmsGraphql
     class_attribute :fields
     class_attribute :graphql_single_instance
     class_attribute :renderable
+    class_attribute :fallback_locale_value
 
     class << self
       def page_size(value)
@@ -24,6 +25,15 @@ module DatoCmsGraphql
       def graphql_fields(*args)
         self.fields = Fields.new(args).to_query
         initialize_queries
+      end
+
+      def fallback_locale(fallback_locale)
+        self.fallback_locale_value =
+          if fallback_locale == :none
+            ""
+          else
+            fallback_locale
+          end
       end
 
       def initialize_queries
@@ -53,7 +63,7 @@ module DatoCmsGraphql
       def query_for
         localized_items = I18n.available_locales.map do |locale|
           <<~GRAPHQL
-            #{locale}_items: all#{plural_name}(locale: #{locale}, fallbackLocales: [#{I18n.default_locale}], first: #{graphql_page_size}, skip: $skip) {
+            #{locale}_items: all#{plural_name}(locale: #{locale}, fallbackLocales: [#{fallback_locale_value || I18n.default_locale}], first: #{graphql_page_size}, skip: $skip) {
               #{fields}
 
               _seoMetaTags {
@@ -75,15 +85,15 @@ module DatoCmsGraphql
       def query_for_single
         localized_item = I18n.available_locales.map do |locale|
           <<~GRAPHQL
-            #{locale}_item: #{single_name}(locale: #{locale}, fallbackLocales: [#{I18n.default_locale}]) {
-              #{fields}
+            #{locale}_item: #{single_name}(locale: #{locale}, fallbackLocales: [#{fallback_locale_value || I18n.default_locale}]) {
+                #{fields}
 
-              _seoMetaTags {
-                tag
-                content
-                attributes
+                _seoMetaTags {
+                  tag
+                  content
+                  attributes
+                }
               }
-            }
           GRAPHQL
         end
 
