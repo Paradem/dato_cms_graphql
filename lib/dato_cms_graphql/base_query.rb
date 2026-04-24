@@ -66,7 +66,7 @@ module DatoCmsGraphql
             #{locale}_items: all#{plural_name}(locale: #{locale}, fallbackLocales: [#{fallback_locale_value || I18n.default_locale}], first: #{graphql_page_size}, skip: $skip) {
               #{fields}
 
-              _editing_url
+              _editingUrl
 
               _seoMetaTags {
                 tag
@@ -90,7 +90,7 @@ module DatoCmsGraphql
             #{locale}_item: #{single_name}(locale: #{locale}, fallbackLocales: [#{fallback_locale_value || I18n.default_locale}]) {
                 #{fields}
 
-                _editing_url
+                _editingUrl
 
                 _seoMetaTags {
                   tag
