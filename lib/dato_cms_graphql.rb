@@ -37,7 +37,8 @@ module DatoCmsGraphql
           "Authorization" => ENV["DATO_API_TOKEN"].to_s,
           "Accept" => "application/json",
           "Content-Type" => "application/json",
-          "X-Include-Drafts" => ENV["DATO_API_INCLUDE_DRAFTS"].present?
+          "X-Include-Drafts" => ENV["DATO_API_INCLUDE_DRAFTS"].present?,
+          "X-Base-Editing-Url" => "https://#{ENV["PROJECT"]}.admin.datocms.com"
         }
       end
     end
