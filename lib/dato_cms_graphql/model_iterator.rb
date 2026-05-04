@@ -2,8 +2,6 @@ module DatoCmsGraphql
   class ModelIterator
     include Enumerable
 
-    delegate :each, :[], to: :localized_results
-
     def initialize(model)
       @model = model
       @query = model::INDEX
@@ -13,21 +11,21 @@ module DatoCmsGraphql
       @pages = @count / @page_size + ((@count % @page_size).positive? ? 1 : 0)
     end
 
-    private
-
-    def localized_results
-      results["#{I18n.locale}_items"]
+    def count
+      @count
     end
 
-    def results
-      @results ||= (0..@pages).each_with_object({}) do |page, rs|
+    def each
+      return to_enum(:each) unless block_given?
+
+      (0..@pages).each do |page|
         res_page = DatoCmsGraphql.query(@query, variables: {skip: @page_size * page})
 
-        res_page.each do |k, v|
-          v = v.map { |m| @model.new(m) }
+        items = res_page["#{I18n.locale}_items"]
+        next unless items
 
-          rs[k] ||= []
-          rs[k].concat(v)
+        items.each do |raw|
+          yield @model.new(raw)
         end
       end
     end
