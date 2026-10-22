@@ -5,7 +5,10 @@ module DatoCmsGraphql::Rails
     extend ActiveSupport::Concern
 
     included do
-      enum :locale, I18n.available_locales
+      # records.locale is a string column. Map each configured locale to its own
+      # string so readers, predicates and scopes round-trip the stored code
+      # instead of Rails' default integer mapping for array enums.
+      enum :locale, I18n.available_locales.to_h { |locale| [locale.to_s, locale.to_s] }
     end
 
     class_methods do

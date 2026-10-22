@@ -18,6 +18,7 @@ class TestSchema < GraphQL::Schema
   class PersonType < GraphQL::Schema::Object
     field :id, String, null: true
     field :name, String, null: true
+    field :_editing_url, String, null: true
     field :_seo_meta_tags, [TagType], null: false
   end
 
