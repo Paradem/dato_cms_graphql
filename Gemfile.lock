@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    dato_cms_graphql (0.4.1)
+    dato_cms_graphql (0.4.2)
       activesupport (>= 7.1, < 9.0)
       graphql-client (~> 0.23.0)
       logger
