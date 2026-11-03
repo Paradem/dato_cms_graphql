@@ -2,12 +2,14 @@
 
 require "active_support/core_ext/class/attribute"
 require "active_support/core_ext/object/inclusion"
+require "active_support/core_ext/object/blank"
 require "active_support/core_ext/hash/keys"
 
 require "graphql/client"
 require "graphql/client/http"
 
 require_relative "dato_cms_graphql/version"
+require_relative "dato_cms_graphql/http_transport"
 require_relative "dato_cms_graphql/fields"
 require_relative "dato_cms_graphql/base_query"
 
@@ -31,17 +33,7 @@ module DatoCmsGraphql
   if ENV["TEST"] == "true"
     Client = GraphQL::Client.new(schema: TestSchema, execute: TestSchema)
   elsif ENV["DATO_API_TOKEN"].present?
-    HTTP = GraphQL::Client::HTTP.new("https://graphql.datocms.com") do
-      def headers(context)
-        {
-          "Authorization" => ENV["DATO_API_TOKEN"].to_s,
-          "Accept" => "application/json",
-          "Content-Type" => "application/json",
-          "X-Include-Drafts" => ENV["DATO_API_INCLUDE_DRAFTS"].present?,
-          "X-Base-Editing-Url" => "https://#{ENV["PROJECT"]}.admin.datocms.com"
-        }
-      end
-    end
+    HTTP = HTTPTransport.new
 
     Schema = GraphQL::Client.load_schema(HTTP)
     Client = GraphQL::Client.new(schema: Schema, execute: HTTP)
@@ -62,7 +54,7 @@ module DatoCmsGraphql
       raise "DatoCmsGraphql.path_to_queries has not been set with the path to your queries" if path_to_queries.nil?
       raise "\"#{path_to_queries}\" does not exist" unless File.exist?(path_to_queries)
 
-      Dir[File.join(path_to_queries, "*.rb")].sort.each { require(it) }
+      Dir[File.join(path_to_queries, "*.rb")].sort.each { |file| require(file) }
       ObjectSpace.each_object(::Class)
         .select { |klass| klass < DatoCmsGraphql::BaseQuery }
         .group_by(&:name).values.map { |values| values.max_by(&:object_id) }
