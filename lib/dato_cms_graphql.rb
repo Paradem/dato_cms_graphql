@@ -33,7 +33,9 @@ module DatoCmsGraphql
   if ENV["TEST"] == "true"
     Client = GraphQL::Client.new(schema: TestSchema, execute: TestSchema)
   elsif ENV["DATO_API_TOKEN"].present?
-    HTTP = HTTPTransport.new
+    # This global client populates the public cache. Preview uses a separate
+    # explicitly configured client/transport, never ambient preview ENV.
+    HTTP = HTTPTransport.new(include_drafts: false)
 
     Schema = GraphQL::Client.load_schema(HTTP)
     Client = GraphQL::Client.new(schema: Schema, execute: HTTP)

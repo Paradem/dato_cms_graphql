@@ -45,6 +45,33 @@ class HTTPTransportTest < Minitest::Test
     assert_equal "true", @transport.headers(nil)["X-Include-Drafts"]
   end
 
+  def test_fixed_published_policy_cannot_be_overridden_by_context_or_environment
+    transport = DatoCmsGraphql::HTTPTransport.new(include_drafts: false)
+    [nil, "", "false", "true", "1"].each do |setting|
+      ENV["DATO_API_INCLUDE_DRAFTS"] = setting
+      [{}, {include_drafts: true}, {include_drafts: false}].each do |context|
+        refute transport.headers(context).key?("X-Include-Drafts")
+      end
+    end
+  end
+
+  def test_fixed_preview_policy_is_separate_from_published_transport
+    published = DatoCmsGraphql::HTTPTransport.new(include_drafts: false)
+    preview = DatoCmsGraphql::HTTPTransport.new(include_drafts: true)
+    assert_equal "true", preview.headers(include_drafts: false)["X-Include-Drafts"]
+    refute published.headers(include_drafts: true).key?("X-Include-Drafts")
+    assert_raises(ArgumentError) { DatoCmsGraphql::HTTPTransport.new(include_drafts: "false") }
+  end
+
+  def test_explicit_environment_or_primary_selection_ignores_ambient_environment
+    ENV["DATO_ENVIRONMENT"] = "synthetic-ambient"
+    transport = DatoCmsGraphql::HTTPTransport.new(environment: "synthetic-selected")
+    assert_equal "synthetic-selected", transport.headers({})["X-Environment"]
+    primary = DatoCmsGraphql::HTTPTransport.new(environment: nil)
+    refute primary.headers({}).key?("X-Environment")
+    assert_equal "synthetic-ambient", @transport.headers({})["X-Environment"]
+  end
+
   def test_headers_include_authorization_json_and_editing_context
     headers = @transport.headers({})
     assert_equal "synthetic-offline-token", headers["Authorization"]
@@ -95,7 +122,7 @@ class HTTPTransportTest < Minitest::Test
   end
 
   def test_default_client_uses_the_same_transport_for_schema_and_delivery
-    result = isolated(<<~RUBY, "DATO_API_TOKEN" => "synthetic-offline-token", "DATO_ENVIRONMENT" => "synthetic-sandbox", "DATO_API_INCLUDE_DRAFTS" => "false")
+    result = isolated(<<~RUBY, "DATO_API_TOKEN" => "synthetic-offline-token", "DATO_ENVIRONMENT" => "synthetic-sandbox", "DATO_API_INCLUDE_DRAFTS" => "true")
       require "graphql/client"
       require "graphql/client/http"
       original = GraphQL::Client.method(:load_schema)
@@ -115,7 +142,7 @@ class HTTPTransportTest < Minitest::Test
         same_transport: seen.first.equal?(DatoCmsGraphql::HTTP),
         same_delivery: DatoCmsGraphql::Client.instance_variable_get(:@execute).equal?(DatoCmsGraphql::HTTP),
         environment: seen.first.headers({})["X-Environment"],
-        draft_header: seen.first.headers({}).key?("X-Include-Drafts")
+        draft_header: seen.first.headers(include_drafts: true).key?("X-Include-Drafts")
       )
     RUBY
     assert_equal "DatoCmsGraphql::HTTPTransport", result.fetch("transport")

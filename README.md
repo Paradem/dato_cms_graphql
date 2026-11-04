@@ -28,33 +28,63 @@ schema introspection and delivery. Set `DATO_ENVIRONMENT` explicitly when select
 a non-default environment; the same header is used throughout initialization.
 `DATO_API_TOKEN` and the optional editing-link `PROJECT` remain host configuration.
 
-Published fetches must opt out of drafts explicitly, even if a legacy process-wide
-preview flag is enabled:
+The global `DatoCmsGraphql::HTTP`/`Client` is published-only, regardless of an
+ambient preview flag or request context. Independently composed public clients
+should also fix their policy, and pass the explicit per-request context:
 
 ```ruby
 DatoCmsGraphql::Client.query(query, variables: {}, context: {include_drafts: false})
 ```
 
-Only boolean `true` in the request context, or the exact environment value
-`DATO_API_INCLUDE_DRAFTS=true` when the context has no policy, enables the draft
-header. False/blank values omit it; an explicit false HTTP header is never sent.
-Public-cache clients should always use `include_drafts: false`. Independent preview
-clients and their authorization/cache boundaries remain the application's policy.
+For independently constructed transports with no fixed policy, only boolean
+`true` in context, or exact `DATO_API_INCLUDE_DRAFTS=true` without a context policy,
+enables drafts. `HTTPTransport.new(include_drafts: false)` fixes published-only
+behavior; `true` fixes preview behavior. Other constructor values are rejected.
+Independent preview clients and their authorization/cache boundaries remain the
+application's policy; do not reuse the global public client for preview.
 
 The transport is also independently available without initializing a client or
 loading a schema:
 
 ```ruby
 require "dato_cms_graphql/http_transport"
-transport = DatoCmsGraphql::HTTPTransport.new
+transport = DatoCmsGraphql::HTTPTransport.new(include_drafts: false, environment: "staging")
 headers = transport.headers(include_drafts: false)
 ```
 
 Requiring/constructing this class does not contact DatoCMS. Reading headers needs
 the configured token; requiring the main library with a real token retains its
-existing boot-time schema loading. Version 0.4.2 retains 0.4.1's string-backed
-CacheTable locale enum: older integer-backed consumers need an explicit reviewed
-upgrade, not a blind Git repin just to adopt the transport.
+existing boot-time schema loading. Omitting `environment:` reads the current
+`DATO_ENVIRONMENT`; passing `environment: nil` explicitly selects the primary
+endpoint without an environment header, ignoring ambient environment settings.
+
+## Rails locale storage compatibility
+
+New `CacheTable` models default to string-backed locale codes. Existing integer
+caches must declare their **actual historical values**, before including the
+concern; never infer integer positions from the current locale ordering:
+
+```ruby
+class Record < ApplicationRecord
+  def self.dato_cms_locale_mapping
+    {en: 0, fr: 1}
+  end
+
+  include DatoCmsGraphql::Rails::CacheTable
+end
+```
+
+The mapping must cover exactly `I18n.available_locales`, with unique nonnegative
+integers or each locale's own string code. Incomplete, mixed or ambiguous mappings
+fail before enum definition. Configure locales before loading the model. This
+changes neither the column nor persisted rows: verify the host's schema, enum
+values, JSON/STI projections, permalink derivation and locale scopes before
+repinning. `ModelIterator` retains `each`, count and Array-style `[]` results;
+indexing re-enumerates the collection while `each` remains streaming.
+
+The legacy `Rails::Persistence.cache_data` helper retains incremental writes and
+returns a fresh set of synced CMS IDs; it is not an atomic refresh or an external
+indexing pipeline. A failed call clears its ID tracking, not already-written rows.
 
 ## Development
 
