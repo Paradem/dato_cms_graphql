@@ -1,5 +1,16 @@
 ## [Unreleased]
 
+## [0.4.3] - 2026-11-04
+
+- Support explicit, validated legacy integer locale mappings without changing new
+  string-backed caches or relying on locale ordering; exercise real SQLite/STI,
+  JSON/permalink projections, scopes and repeated persistence calls.
+- Fix the global public client to published-only; independently constructed
+  transports support a fixed draft policy and explicit environment/primary
+  selection without mutating process configuration.
+- Restore legacy iterator Array-style indexing while retaining streaming `each`.
+  Characterize localized iteration and legacy ID-tracking failure semantics.
+
 ## [0.4.2] - 2026-11-03
 
 - Share `DatoCmsGraphql::HTTPTransport` between schema introspection and delivery,

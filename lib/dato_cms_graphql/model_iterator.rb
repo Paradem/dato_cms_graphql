@@ -11,8 +11,12 @@ module DatoCmsGraphql
       @pages = @count / @page_size + ((@count % @page_size).positive? ? 1 : 0)
     end
 
-    def count
-      @count
+    attr_reader :count
+
+    # Older consumers exposed Array-style indexing through their iterator.
+    # Preserve that result API without changing the streaming each path.
+    def [](...)
+      to_a.[](...)
     end
 
     def each
