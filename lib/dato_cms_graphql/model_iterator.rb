@@ -2,10 +2,11 @@ module DatoCmsGraphql
   class ModelIterator
     include Enumerable
 
-    def initialize(model)
+    def initialize(model, executor: DatoCmsGraphql)
       @model = model
+      @executor = executor
       @query = model::INDEX
-      @count = DatoCmsGraphql.count(model::META_DATA)
+      @count = @executor.count(model::META_DATA)
       @page_size = model.graphql_page_size
 
       @pages = @count / @page_size + ((@count % @page_size).positive? ? 1 : 0)
@@ -23,7 +24,7 @@ module DatoCmsGraphql
       return to_enum(:each) unless block_given?
 
       (0..@pages).each do |page|
-        res_page = DatoCmsGraphql.query(@query, variables: {skip: @page_size * page})
+        res_page = @executor.query(@query, variables: {skip: @page_size * page})
 
         items = res_page["#{I18n.locale}_items"]
         next unless items

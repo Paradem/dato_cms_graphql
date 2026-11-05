@@ -1,5 +1,13 @@
 ## [Unreleased]
 
+## [0.4.4] - 2026-11-04
+
+- Allow query helpers/iterators to use an explicitly scoped executor while
+  retaining the existing default global API. Standalone `ClientExecutor` reuses
+  response normalization and rejects partial errors/invalid counts without
+  exposing payloads. Rails integrations can keep direct `.all`/`.get` helpers
+  without loading or replacing global client constants.
+
 ## [0.4.3] - 2026-11-04
 
 - Support explicit, validated legacy integer locale mappings without changing new
