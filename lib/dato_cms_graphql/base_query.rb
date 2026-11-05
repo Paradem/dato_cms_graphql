@@ -120,11 +120,15 @@ module DatoCmsGraphql
 
       def all
         raise "This is a single instance model" if single_instance?
-        ModelIterator.new(self)
+        ModelIterator.new(self, executor: executor)
       end
 
       def get
-        new(DatoCmsGraphql.query(self::SINGLE))
+        new(executor.query(self::SINGLE))
+      end
+
+      def executor
+        DatoCmsGraphql
       end
 
       def single_instance?

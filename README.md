@@ -58,6 +58,16 @@ existing boot-time schema loading. Omitting `environment:` reads the current
 `DATO_ENVIRONMENT`; passing `environment: nil` explicitly selects the primary
 endpoint without an environment header, ignoring ambient environment settings.
 
+## Scoped query helpers
+
+Version 0.4.4 lets `BaseQuery` subclasses override `.executor` with a
+`DatoCmsGraphql::ClientExecutor.new(client: ..., context: {include_drafts: false})`.
+The existing `.all` iterator, indexing and singleton `.get` keep their results
+without reaching a global client. Require `dato_cms_graphql/client_executor`
+directly for lazy integrations. The default executor remains `DatoCmsGraphql`.
+The scoped executor rejects nested GraphQL errors and invalid counts without
+logging response payloads; callers still own transport/source policy.
+
 ## Rails locale storage compatibility
 
 New `CacheTable` models default to string-backed locale codes. Existing integer
