@@ -1,6 +1,29 @@
 # DatoCmsGraphql
 
-A "simple" library to aid in connecting to the DatoCMS graphql api.
+DatoCMS GraphQL queries, transport policy and optional offline-first Rails integration.
+
+## Rails CMS integration
+
+Version 0.5.0 includes the former `paradem_cms_site` implementation in this public,
+MIT-licensed gem: query generation, atomic published-cache refresh, coordination,
+webhooks/jobs, an install generator and offline diagnostics. There is **one gem**;
+`ParademCmsSite` remains the integration namespace so existing routes, initializers
+and serialized jobs keep working. No private repository or build credential is
+needed.
+
+Opt in without loading the legacy global live-schema client:
+
+```ruby
+gem "dato_cms_graphql", git: "https://github.com/Paradem/dato_cms_graphql.git",
+  ref: "REVIEWED_PUBLIC_COMMIT", require: "paradem_cms_site"
+```
+
+See [new Rails installation](docs/installation.md),
+[existing application migration](docs/legacy-adoption.md),
+[refresh semantics](docs/runtime-sync.md) and
+[webhooks/configuration](docs/rails-integration.md).
+Rails dependencies remain optional; client-only and Bridgetown usage is unchanged.
+Requiring `paradem_cms_site` or its tooling never contacts DatoCMS.
 ## Installation
 
 I don't plan to publish this gem for a while, so for now install it from github.
@@ -99,7 +122,9 @@ indexing pipeline. A failed call clears its ID tracking, not already-written row
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run
-`rake test` to run the tests. You can also run `bin/console` for an interactive
+`bundle exec rake test` to run both isolated suites (`test:core` and `test:site`),
+including disposable Rails applications with synthetic content and HTTP blocked.
+Run `bundle exec standardrb` and `gem build dato_cms_graphql.gemspec` before committing. You can also run `bin/console` for an interactive
 prompt that will allow you to experiment.
 
 To install this gem onto your local machine, run `bundle exec rake install`. To

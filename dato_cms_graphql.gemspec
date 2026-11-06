@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.authors = ["Kevin Pratt"]
   spec.email = ["kevin@paradem.co"]
 
-  spec.summary = "A basic library to assist in querying DatoCMS "
-  spec.description = "This library allows you to generate models that can be used to query your DatoCMS instance."
+  spec.summary = "DatoCMS queries and optional Rails cache synchronization"
+  spec.description = "Query DatoCMS with explicit transport policy, or opt into offline-first Rails installation, query generation, atomic cache refresh and authenticated webhooks."
   spec.homepage = "https://github.com/Paradem/dato_cms_graphql"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.2.0"
@@ -20,13 +20,11 @@ Gem::Specification.new do |spec|
   spec.metadata["source_code_uri"] = "https://github.com/Paradem/dato_cms_graphql.git"
   spec.metadata["changelog_uri"] = "https://github.com/Paradem/dato_cms_graphql.git/CHANGELOG.md"
 
-  # Specify which files should be added to the gem when it is released.
-  # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
+  # Package only the public implementation and documentation, never local data,
+  # credentials, planning files, tests or development dependency locks.
   spec.files = Dir.chdir(__dir__) do
-    `git ls-files -z`.split("\x0").reject do |f|
-      (File.expand_path(f) == __FILE__) ||
-        f.start_with?(*%w[bin/ test/ spec/ features/ .git .github appveyor Gemfile])
-    end
+    Dir["lib/**/*", "exe/*", "docs/**/*.md", "sig/**/*", "README.md", "CHANGELOG.md", "LICENSE.txt"]
+      .select { |path| File.file?(path) }.sort
   end
   spec.bindir = "exe"
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }

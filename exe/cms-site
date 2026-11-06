@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "paradem_cms_site/cli"
+exit ParademCmsSite::CLI.new.run(ARGV)

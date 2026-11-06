@@ -1,5 +1,18 @@
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-06
+
+- Consolidate query generation, manifest/doctor, published-cache synchronization,
+  coordination, Rails installer, tasks, authenticated webhook and refresh job into
+  this MIT-licensed gem. There is no private gem dependency or build authentication.
+- Preserve `ParademCmsSite` require paths, routes, job names and configuration APIs;
+  the compatibility version constant follows the client version. Explicit Rails
+  opt-in stays offline and does not load the legacy global live-schema client.
+- Preserve integer/string locale mappings, cache schemas, query definitions,
+  transactional derived-data hooks and post-commit host-owned integrations.
+- Bring synthetic integration/installer/concurrency tests into a separate suite
+  alongside client tests; package only allowlisted implementation/documentation.
+
 ## [0.4.4] - 2026-11-04
 
 - Allow query helpers/iterators to use an explicitly scoped executor while
