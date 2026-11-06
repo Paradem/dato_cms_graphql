@@ -121,6 +121,10 @@ indexing pipeline. A failed call clears its ID tracking, not already-written row
 
 ## Development
 
+Use Ruby **4.0.9** (`.tool-versions`). CI pins that exact patch while retaining
+older supported-Ruby compatibility coverage; the gem's minimum Ruby and lint
+syntax baseline are unchanged.
+
 After checking out the repo, run `bin/setup` to install dependencies. Then, run
 `bundle exec rake test` to run both isolated suites (`test:core` and `test:site`),
 including disposable Rails applications with synthetic content and HTTP blocked.
