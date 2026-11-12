@@ -29,9 +29,10 @@ class FullSyncTest < Minitest::Test
     ENV["DATO_API_TOKEN"] = @previous_token
   end
 
-  def with_installation(generated: true)
-    with_site(generated: generated, queries: ["Page"]) do |root, data|
+  def with_installation(generated: true, queries: ["Page"], schema: nil)
+    with_site(generated: generated, queries: queries) do |root, data|
       data["rails"] = {"cache_model" => "CmsRecord", "delivery_schema" => "config/delivery.json", "webhook" => "disabled"}
+      File.write(File.join(root, data["schema_export"]), schema) if schema
       manifest = ParademCmsSite::Manifest.new(data, root: root)
       events = []
       ParademCmsSite.configuration.sync = ->(context) { events << [:refresh, context] }
@@ -40,10 +41,12 @@ class FullSyncTest < Minitest::Test
     end
   end
 
-  def with_snapshot(events)
+  def with_snapshot(events, delivery: nil, fail: false)
     original = ParademCmsSite::SchemaSnapshot.method(:call)
     ParademCmsSite::SchemaSnapshot.define_singleton_method(:call) { |manifest|
       events << :snapshot
+      raise IOError, "synthetic snapshot failure" if fail
+      File.write(manifest.path_for(:delivery_schema), delivery) if delivery
       manifest.path_for(:delivery_schema)
     }
     yield
@@ -51,7 +54,7 @@ class FullSyncTest < Minitest::Test
     ParademCmsSite::SchemaSnapshot.define_singleton_method(:call, original)
   end
 
-  def runner(installation, events, fail_stage: nil)
+  def runner(installation, events, fail_stage: nil, exported: nil)
     original_schema = File.read(installation.manifest.path_for(:schema_export)) if installation.manifest.generated_queries?
     lambda do |*arguments, chdir:|
       assert_equal installation.manifest.root.to_s, chdir
@@ -60,11 +63,22 @@ class FullSyncTest < Minitest::Test
       if stage == :export
         assert_equal({"DATOCMS_API_TOKEN" => "synthetic-cli-token"}, arguments.first)
         refute arguments.drop(1).any? { |argument| argument.include?("synthetic-cli-token") || argument.include?("--api-token") }
-        File.write(arguments.fetch(4), original_schema)
+        File.write(arguments.fetch(4), exported || original_schema)
       end
       stage != fail_stage
     end
   end
+
+  def artifact_bytes(manifest)
+    paths = [manifest.path_for(:delivery_schema)]
+    if manifest.generated_queries?
+      paths.concat([manifest.path_for(:schema_export), manifest.path_for(:overrides_path)])
+      manifest.queries.each { |name| paths.concat([manifest.query_file_for(name), manifest.model_file_for(name)]) }
+    end
+    paths.compact.uniq.to_h { |path| [path, File.exist?(path) ? File.binread(path) : nil] }
+  end
+
+  def changed_schema(manifest) = "#{File.read(manifest.path_for(:schema_export))}\n// synthetic refresh\n"
 
   def test_full_cli_exports_generates_formats_and_refreshes_in_order_without_token_argv_or_output
     with_installation do |installation, events|
@@ -109,18 +123,61 @@ class FullSyncTest < Minitest::Test
     end
   end
 
-  def test_export_or_formatter_failure_never_refreshes_content
+  def test_export_or_formatter_failure_restores_the_last_good_artifact_set
     [:export, :format].each do |failure|
       with_installation do |installation, events|
-        before = File.read(installation.manifest.path_for(:schema_export))
-        with_snapshot(events) do
+        manifest = installation.manifest
+        before = artifact_bytes(manifest)
+        with_snapshot(events, delivery: "synthetic delivery replacement") do
           assert_raises(ParademCmsSite::FullSync::CommandError) do
-            ParademCmsSite::FullSync.new(installation, command_runner: runner(installation, events, fail_stage: failure), output: StringIO.new).call
+            ParademCmsSite::FullSync.new(installation,
+              command_runner: runner(installation, events, fail_stage: failure, exported: changed_schema(manifest)),
+              output: StringIO.new).call
           end
         end
         refute events.any? { |event| event.is_a?(Array) && event.first == :refresh }
-        assert_equal before, File.read(installation.manifest.path_for(:schema_export)) if failure == :export
+        assert_equal before, artifact_bytes(manifest)
       end
+    end
+  end
+
+  def test_snapshot_failure_restores_the_replaced_export_and_keeps_the_last_good_delivery_schema
+    with_installation do |installation, events|
+      manifest = installation.manifest
+      File.write(manifest.path_for(:delivery_schema), "last-good delivery schema")
+      before = artifact_bytes(manifest)
+      with_snapshot(events, fail: true) do
+        assert_raises(IOError) do
+          ParademCmsSite::FullSync.new(installation,
+            command_runner: runner(installation, events, exported: changed_schema(manifest)),
+            output: StringIO.new).call
+        end
+      end
+      assert_equal [:export, :snapshot], events
+      assert_equal before, artifact_bytes(manifest)
+    end
+  end
+
+  def test_generator_failure_rolls_back_partial_multi_model_generation
+    schema = <<~TS
+      export type Page = ItemTypeDefinition<Settings, 'page', { title: { type: 'string'; }; link: { type: 'link'; }; }>;
+      export type Global = ItemTypeDefinition<Settings, 'global', { body: { type: 'rich_text'; blocks: never; }; }>;
+    TS
+    with_installation(queries: %w[Page Global], schema: schema) do |installation, events|
+      manifest = installation.manifest
+      FileUtils.rm_f(manifest.model_file_for("Page"))
+      before = artifact_bytes(manifest)
+      with_snapshot(events, delivery: "synthetic delivery replacement") do
+        error = assert_raises(ArgumentError) do
+          ParademCmsSite::FullSync.new(installation,
+            command_runner: runner(installation, events, exported: changed_schema(manifest)),
+            output: StringIO.new).call
+        end
+        assert_match(/no valid block types/, error.message)
+      end
+      assert_equal [:export, :snapshot], events
+      assert_equal before, artifact_bytes(manifest)
+      refute File.exist?(manifest.model_file_for("Page"))
     end
   end
 

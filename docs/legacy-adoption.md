@@ -69,13 +69,21 @@ keys, errors or incomplete collections.
 - `cms:schema:snapshot`: CDA metadata only; no cache, generation or hooks.
 - `cms:sync:all` / `sync:all`: export CMA schema for generated-query sites,
   snapshot CDA, generate/format owned queries, reload definitions, then refresh.
-  Hand-authored queries are not regenerated or formatted.
+  Hand-authored queries are not regenerated or formatted. A failed preparation
+  restores that site's last-good artifact set.
 - `cache_dato` / `dato_cms:cache`: aliases of `cms:sync` for installed applications.
   Keep any historical serialized job subclasses until old queues are drained.
 - `cms:doctor`: read-only/offline diagnostics, not live acceptance.
 
 Full CLI passes the management token through the DatoCMS CLI's supported
-`DATOCMS_API_TOKEN` environment input, never argv or command logs. Export/format
-failure stops before content refresh. `DATO_ENVIRONMENT` is the canonical
-schema/delivery selector; legacy `DATO_SCHEMA_ENVIRONMENT` selects only the
-snapshot when the canonical variable is blank.
+`DATOCMS_API_TOKEN` environment input, never argv or command logs. Before the
+first generation step it captures the last-good owned artifact set (generation
+export, CDA snapshot, owned queries/models and overrides); any preparation
+failure (export, snapshot, generation, formatting or query reload) restores it
+before re-raising. The export and snapshot are still individually validated and
+renamed; the set restore is what prevents activating a mixed schema/query set.
+Only a successful preparation reaches content refresh, whose own failure does
+not roll back the new artifacts. An interrupted or killed process is not
+covered. `DATO_ENVIRONMENT` is the canonical schema/delivery selector; legacy
+`DATO_SCHEMA_ENVIRONMENT` selects only the snapshot when the canonical variable
+is blank.

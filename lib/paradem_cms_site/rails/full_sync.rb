@@ -2,11 +2,14 @@
 
 require "open3"
 require "tempfile"
+require "fileutils"
 require_relative "schema_snapshot"
 require_relative "../query_generation"
 
 module ParademCmsSite
   # One explicit CLI lifecycle; published webhooks/boot never export or generate.
+  # A failed preparation restores the last-good owned artifact set; the cache
+  # refresh runs only after the whole set is prepared and reloaded.
   class FullSync
     class CommandError < StandardError; end
 
@@ -18,6 +21,20 @@ module ParademCmsSite
     end
 
     def call
+      artifacts = ArtifactSet.capture(@manifest)
+      begin
+        prepare
+      rescue
+        artifacts.restore!
+        raise
+      end
+      @output.puts "Refresh the published CMS cache"
+      ParademCmsSite.refresh("source" => "cli")
+    end
+
+    private
+
+    def prepare
       export_schema if @manifest.generated_queries?
       @output.puts "Snapshot the published GraphQL delivery schema"
       SchemaSnapshot.call(@manifest)
@@ -30,11 +47,7 @@ module ParademCmsSite
       else
         @installation.reset_client!
       end
-      @output.puts "Refresh the published CMS cache"
-      ParademCmsSite.refresh("source" => "cli")
     end
-
-    private
 
     def export_schema
       @output.puts "Export the CMS generation schema"
@@ -62,6 +75,37 @@ module ParademCmsSite
       # echo it or include the invocation/environment in an exception.
       _stdout, _stderr, status = Open3.capture3(*arguments, chdir: chdir)
       status.success?
+    end
+
+    # Last-good bytes of the owned generation/delivery files. The export and
+    # snapshot are individually renamed after validation, so restoring the
+    # whole set is what keeps a failed run from activating mixed artifacts.
+    class ArtifactSet
+      def self.capture(manifest)
+        paths = [manifest.path_for(:delivery_schema)]
+        if manifest.generated_queries?
+          paths.concat([manifest.path_for(:schema_export), manifest.path_for(:overrides_path)])
+          manifest.queries.each do |name|
+            paths.concat([manifest.query_file_for(name), manifest.model_file_for(name)])
+          end
+        end
+        new(paths.compact.uniq)
+      end
+
+      def initialize(paths)
+        @contents = paths.to_h { |path| [path, File.exist?(path) ? File.binread(path) : nil] }
+      end
+
+      def restore!
+        @contents.each do |path, contents|
+          if contents
+            FileUtils.mkdir_p(File.dirname(path))
+            File.binwrite(path, contents)
+          else
+            FileUtils.rm_f(path)
+          end
+        end
+      end
     end
   end
 end
