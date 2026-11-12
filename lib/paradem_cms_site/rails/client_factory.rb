@@ -3,6 +3,7 @@
 require "json"
 require "graphql/client"
 require "dato_cms_graphql/http_transport"
+require "dato_cms_graphql/locale"
 
 module ParademCmsSite
   class ClientFactory
@@ -47,6 +48,7 @@ module ParademCmsSite
     def initialize(manifest)
       @manifest = manifest
       @data = JSON.parse(manifest.path_for(:fixture_data).read)
+      @locale_by_graphql = manifest.locales.to_h { |locale| [DatoCmsGraphql::Locale.graphql(locale), locale] }
       valid = @data.is_a?(Hash) && @data.keys.sort == manifest.queries.sort
       valid &&= @data.values.all? do |localized|
         localized.is_a?(Hash) && localized.keys.sort == manifest.locales.sort && localized.values.all? do |rows|
@@ -63,7 +65,13 @@ module ParademCmsSite
           ["all#{entry.pluralize}", "_all#{entry.pluralize}Meta", entry.camelize(:lower)].include?(name)
         end
         raise ConfigurationError, "Unknown fixture query field" unless model
-        locale = arguments[:locale]&.to_s || @manifest.locales.first
+        locale = if arguments[:locale]
+          @locale_by_graphql.fetch(arguments[:locale].to_s) do
+            raise ConfigurationError, "Fixture schema locale is not owned by this site"
+          end
+        else
+          @manifest.locales.first
+        end
         rows = @data.fetch(model).fetch(locale)
         if name == "_all#{model.pluralize}Meta"
           {"count" => rows.length}

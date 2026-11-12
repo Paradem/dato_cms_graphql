@@ -2,6 +2,7 @@
 
 require "pathname"
 require "yaml"
+require_relative "../dato_cms_graphql/locale"
 
 module ParademCmsSite
   # Local, versioned ownership metadata. This is not a CMS credential, runtime
@@ -9,7 +10,7 @@ module ParademCmsSite
   class Manifest
     KEYS = %w[version site locales locale_storage locale_mapping queries generated_queries schema_export query_path model_path overrides_path model_api_key_selection permalink_fields optional_singletons rails].freeze
     MODEL_NAME = /\A[A-Z][A-Za-z0-9]*\z/
-    LOCALE = /\A[a-z]{2,3}(?:[-_][A-Za-z0-9]{2,8})*\z/
+    LOCALE = DatoCmsGraphql::Locale::PATTERN
 
     attr_reader :root, :data
 
@@ -42,6 +43,9 @@ module ParademCmsSite
     def generated_queries? = data.fetch("generated_queries")
     def model_api_key_selection = data.fetch("model_api_key_selection", "all").to_sym
     def optional_singletons = data.fetch("optional_singletons", [])
+
+    # Regional codes use underscores in GraphQL aliases and enum values.
+    def graphql_locale(locale) = DatoCmsGraphql::Locale.graphql(locale)
 
     def path_for(key)
       relative = %w[delivery_schema fixture_data].include?(key.to_s) ? data.fetch("rails", {})[key.to_s] : data[key.to_s]
@@ -109,6 +113,9 @@ module ParademCmsSite
       end
       unless locales.is_a?(Array) && locales.any? && locales.uniq == locales && locales.all? { |locale| locale.is_a?(String) && locale.match?(LOCALE) }
         raise ConfigurationError, "locales must be unique locale codes"
+      end
+      unless locales.map { |locale| graphql_locale(locale) }.uniq.size == locales.size
+        raise ConfigurationError, "locales must not collide after GraphQL normalization"
       end
       unless queries.is_a?(Array) && queries.any? && queries.uniq == queries && queries.all? { |name| name.is_a?(String) && name.match?(MODEL_NAME) }
         raise ConfigurationError, "queries must be unique owned model names"

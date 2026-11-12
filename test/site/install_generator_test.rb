@@ -83,11 +83,25 @@ class InstallGeneratorTest < Minitest::Test
   def test_invalid_options_do_not_partially_install
     with_app do |root|
       before = snapshot(root)
-      [{site: "bad/site"}, {models: "Page,Page"}, {models: "../Page"}, {models: "FAQ"}, {models: "Object"}, {locales: "en,en"}, {locales: "en-US"},
+      [{site: "bad/site"}, {models: "Page,Page"}, {models: "../Page"}, {models: "FAQ"}, {models: "Object"}, {locales: "en,en"}, {locales: "EN"}, {locales: "en-US,en_US"},
         {singletons: "Other"}, {cache_model: "Page"}, {cache_model: "SchemaMigration"}, {webhook: "automatic"}].each do |options|
         assert_raises(Rails::Generators::Error) { install(root, **options) }
         assert_equal before, snapshot(root)
       end
+    end
+  end
+
+  def test_regional_locale_installation_normalizes_graphql_names
+    with_app do |root|
+      install(root, locales: "en-US,fr", models: "Page,Global", singletons: "Global")
+      manifest = ParademCmsSite::Manifest.load(root: root)
+      assert_equal %w[en-US fr], manifest.locales
+      assert_includes File.read(File.join(root, "config/cms/schema.graphql")), "enum SiteLocale { en_US fr }"
+      client = ParademCmsSite::ClientFactory.new(manifest).call
+      result = client.execute.execute("{ allPages(locale: en_US) { id title } global(locale: en_US) { id } }")
+      assert_empty result.to_h.fetch("errors", [])
+      assert_equal "fixture-page-en-US", result.to_h.dig("data", "allPages", 0, "id")
+      assert_equal "fixture-global-en-US", result.to_h.dig("data", "global", "id")
     end
   end
 

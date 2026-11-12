@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "dato_cms_graphql/locale"
+
 module ParademCmsSite
   class Sync
     # Extracted from Canada's fetch/validate-before-swap cache refresher and
@@ -86,17 +88,21 @@ module ParademCmsSite
         case value
         when Hash
           value.to_h do |key, item|
-            normalized = key.gsub(/([A-Z]+)([A-Z][a-z])/, '\1_\2').gsub(/([a-z\d])([A-Z])/, '\1_\2').tr("-", "_").downcase
-            [normalized, underscore_keys(item)]
+            [normalize_key(key), underscore_keys(item)]
           end
         when Array then value.map { |item| underscore_keys(item) }
         else value
         end
       end
 
+      # GraphQL response aliases/fields become underscored, lower-case keys.
+      def normalize_key(key)
+        key.gsub(/([A-Z]+)([A-Z][a-z])/, '\1_\2').gsub(/([a-z\d])([A-Z])/, '\1_\2').tr("-", "_").downcase
+      end
+
       def rows_for(query, data, single:)
         @manifest.locales.flat_map do |locale|
-          key = "#{locale}_#{single ? "item" : "items"}"
+          key = normalize_key("#{DatoCmsGraphql::Locale.graphql(locale)}_#{single ? "item" : "items"}")
           raise FetchError, "Missing published data for #{query.query_name} (#{locale})" unless data.key?(key)
           if single && data.fetch(key).nil? && @manifest.optional_singletons.include?(query.query_name)
             next []

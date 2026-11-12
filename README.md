@@ -112,7 +112,9 @@ integers or each locale's own string code. Incomplete, mixed or ambiguous mappin
 fail before enum definition. Configure locales before loading the model. This
 changes neither the column nor persisted rows: verify the host's schema, enum
 values, JSON/STI projections, permalink derivation and locale scopes before
-repinning. `ModelIterator` retains `each`, count and Array-style `[]` results;
+repinning. Regional codes such as `en-US` are stored as declared and normalized
+to the GraphQL name `en_US` in query aliases, `SiteLocale`/fallback arguments,
+published-source keys and fixture lookup. `ModelIterator` retains `each`, count and Array-style `[]` results;
 indexing re-enumerates the collection while `each` remains streaming.
 
 The legacy `Rails::Persistence.cache_data` helper retains incremental writes and

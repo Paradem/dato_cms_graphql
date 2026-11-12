@@ -205,4 +205,10 @@ class QueryGenerationTest < Minitest::Test
       assert_equal({category: [:id]}, loaded.link_fields_for("Page"))
     end
   end
+
+  def test_regional_fallback_locale_is_preserved_for_the_dsl_to_normalize
+    formatted = Q::ClassFormatter.new("Page", [:id], fallback_locale: "en-US").to_s
+    assert_includes formatted, 'fallback_locale "en-US"'
+    assert_raises(ArgumentError) { Q::ClassFormatter.new("Page", [:id], fallback_locale: "en--US") }
+  end
 end

@@ -64,8 +64,10 @@ For generated queries, set `generated_queries: true`, `schema_export` and
 `overrides_path`, and supply a local CMA TypeScript export. That export is not
 CDA introspection JSON. `queries:generate[Page]` accepts `DRY_RUN=1` or `FORCE=1`;
 model ownership and all paths remain explicit in `config/cms_site.yml`.
-The installer currently accepts simple two/three-letter locale codes, not regional
-GraphQL locale aliases.
+The installer accepts simple (`en`) and regional (`en-US`) locale codes. Manifests
+keep the declared spelling; query aliases, `SiteLocale`/fallback arguments and
+the generated fixture schema use the underscored GraphQL form (`en_US`), which
+matches DatoCMS's enum. Locales that collide after normalization are rejected.
 
 ## Diagnostics and commands
 

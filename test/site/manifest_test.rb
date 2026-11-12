@@ -74,4 +74,25 @@ class ManifestTest < Minitest::Test
       assert_raises(ParademCmsSite::ConfigurationError) { ParademCmsSite::Manifest.load(root: root) }
     end
   end
+
+  def test_regional_locales_use_one_normalized_graphql_form
+    with_site do |root, data|
+      regional = data.merge("locales" => ["en-US", "fr"], "locale_storage" => "string",
+        "locale_mapping" => {"en-US" => "en-US", "fr" => "fr"})
+      manifest = ParademCmsSite::Manifest.new(regional, root: root)
+      assert_equal ["en-US", "fr"], manifest.locales
+      assert_equal "en_US", manifest.graphql_locale("en-US")
+      assert_equal "en_US", manifest.graphql_locale(:"en-US")
+      assert_equal "fr", manifest.graphql_locale(:fr)
+
+      collision = regional.merge("locales" => ["en-US", "en_US"],
+        "locale_mapping" => {"en-US" => "en-US", "en_US" => "en_US"})
+      error = assert_raises(ParademCmsSite::ConfigurationError) { ParademCmsSite::Manifest.new(collision, root: root) }
+      assert_includes error.message, "normalization"
+
+      assert_raises(ParademCmsSite::ConfigurationError) do
+        ParademCmsSite::Manifest.new(regional.merge("locales" => ["EN"], "locale_mapping" => {"EN" => "EN"}), root: root)
+      end
+    end
+  end
 end
