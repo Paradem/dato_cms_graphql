@@ -1,4 +1,5 @@
 require_relative "model_iterator"
+require_relative "locale"
 require "ostruct"
 
 module DatoCmsGraphql
@@ -62,8 +63,10 @@ module DatoCmsGraphql
 
       def query_for
         localized_items = I18n.available_locales.map do |locale|
+          graphql_locale = DatoCmsGraphql::Locale.graphql(locale)
+          fallback = DatoCmsGraphql::Locale.graphql(fallback_locale_value || I18n.default_locale)
           <<~GRAPHQL
-            #{locale}_items: all#{plural_name}(locale: #{locale}, fallbackLocales: [#{fallback_locale_value || I18n.default_locale}], first: #{graphql_page_size}, skip: $skip) {
+            #{graphql_locale}_items: all#{plural_name}(locale: #{graphql_locale}, fallbackLocales: [#{fallback}], first: #{graphql_page_size}, skip: $skip) {
               #{fields}
 
               _editingUrl
@@ -86,8 +89,10 @@ module DatoCmsGraphql
 
       def query_for_single
         localized_item = I18n.available_locales.map do |locale|
+          graphql_locale = DatoCmsGraphql::Locale.graphql(locale)
+          fallback = DatoCmsGraphql::Locale.graphql(fallback_locale_value || I18n.default_locale)
           <<~GRAPHQL
-            #{locale}_item: #{single_name}(locale: #{locale}, fallbackLocales: [#{fallback_locale_value || I18n.default_locale}]) {
+            #{graphql_locale}_item: #{single_name}(locale: #{graphql_locale}, fallbackLocales: [#{fallback}]) {
                 #{fields}
 
                 _editingUrl
@@ -159,16 +164,18 @@ module DatoCmsGraphql
     end
 
     def localized_attributes
-      if @attributes.respond_to?(:"#{I18n.locale}_item")
-        @attributes.send(:"#{I18n.locale}_item")
+      key = :"#{DatoCmsGraphql::Locale.graphql(I18n.locale)}_item"
+      if @attributes.respond_to?(key)
+        @attributes.send(key)
       else
         @attributes
       end
     end
 
     def localized_raw_attributes
-      if @raw_attributes.has_key?("#{I18n.locale}_item")
-        @raw_attributes.dig("#{I18n.locale}_item")
+      key = "#{DatoCmsGraphql::Locale.graphql(I18n.locale)}_item"
+      if @raw_attributes.has_key?(key)
+        @raw_attributes.dig(key)
       else
         @raw_attributes
       end

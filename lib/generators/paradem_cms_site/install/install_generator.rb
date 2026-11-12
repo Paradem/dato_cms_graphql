@@ -61,8 +61,11 @@ module ParademCmsSite
         unless @models.any? && @models.uniq == @models && @models.all? { |name| name.match?(Manifest::MODEL_NAME) && name.underscore.camelize == name }
           raise ::Rails::Generators::Error, "models must be unique model names"
         end
-        unless @locales.any? && @locales.uniq == @locales && @locales.all? { |locale| locale.match?(/\A[a-z]{2,3}\z/) }
-          raise ::Rails::Generators::Error, "Use unique simple GraphQL locale codes (for example en,fr); regional aliases need an explicit query adapter"
+        graphql_locales = @locales.map { |locale| DatoCmsGraphql::Locale.graphql(locale) }
+        unless @locales.any? && @locales.uniq == @locales &&
+            @locales.all? { |locale| locale.match?(Manifest::LOCALE) } &&
+            graphql_locales.uniq.size == @locales.size
+          raise ::Rails::Generators::Error, "Use unique locale codes (for example en, fr or en-US); regional codes become underscored GraphQL names"
         end
         unless options[:cache_model].match?(Manifest::MODEL_NAME) && options[:cache_model].underscore.camelize == options[:cache_model] && !@models.include?(options[:cache_model]) && !%w[schema_migrations ar_internal_metadata].include?(options[:cache_model].tableize)
           raise ::Rails::Generators::Error, "cache_model must be a separate model name"
@@ -173,7 +176,7 @@ module ParademCmsSite
             ["all#{name.pluralize}(locale: SiteLocale, fallbackLocales: [SiteLocale!], first: IntType, skip: IntType): [#{name}Record!]!", "_all#{name.pluralize}Meta: RecordMeta!"]
           end
         end
-        "scalar IntType\nenum SiteLocale { #{@locales.join(" ")} }\ntype SeoTag { tag: String, content: String, attributes: String }\ntype RecordMeta { count: Int! }\n#{types.join("\n")}\ntype Query {\n  #{fields.join("\n  ")}\n}\n"
+        "scalar IntType\nenum SiteLocale { #{@locales.map { |locale| DatoCmsGraphql::Locale.graphql(locale) }.join(" ")} }\ntype SeoTag { tag: String, content: String, attributes: String }\ntype RecordMeta { count: Int! }\n#{types.join("\n")}\ntype Query {\n  #{fields.join("\n  ")}\n}\n"
       end
     end
   end

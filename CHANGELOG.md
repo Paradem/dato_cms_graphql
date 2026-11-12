@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+- Support regional locale codes (`en-US`) end to end. Manifests and cache rows
+  keep the declared spelling; query aliases, `SiteLocale`/fallback arguments,
+  published-source keys, fixture lookup and the installer's generated schema use
+  the underscored GraphQL form (`en_US`). Locales that collide after
+  normalization fail before any query is compiled.
+
 ## [0.5.0] - 2026-11-06
 
 - Consolidate query generation, manifest/doctor, published-cache synchronization,
