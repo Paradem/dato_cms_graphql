@@ -143,6 +143,21 @@ class SyncTest < Minitest::Test
     end
   end
 
+  def test_cache_render_policy_is_independent_of_payload_flags_and_published_delivery
+    with_sync do |sync, client, responses, _manifest, queries|
+      queries.each { |query| query.define_singleton_method(:render?) { false } }
+      responses.fetch(["Page:index", 0]).each_value do |items|
+        items.each { |item| item["render"] = true }
+      end
+      responses.fetch(["Global:single", 0]).each_value { |item| item["render"] = true }
+
+      assert_equal 6, sync.call.record_count
+      assert IntegerRecord.all.all? { |record| record.render == false }
+      assert IntegerRecord.all.all? { |record| record.cms_record.fetch("render") == true }
+      assert client.calls.all? { |_, _, context, _| context == {include_drafts: false} }
+    end
+  end
+
   def test_lazy_client_creation_is_coordinated_before_fetch_without_a_database_writer
     with_sync do |_sync, client, _responses, manifest, queries|
       locked = false
