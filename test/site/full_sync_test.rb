@@ -3,6 +3,7 @@
 require_relative "test_helper"
 require "paradem_cms_site/rails/installation"
 require "paradem_cms_site/rails/full_sync"
+require "rbconfig"
 require "stringio"
 
 class FullSyncTest < Minitest::Test
@@ -74,6 +75,37 @@ class FullSyncTest < Minitest::Test
       assert_equal [:export, :snapshot, :format, :reload, [:refresh, {"source" => "cli"}]], events
       assert_includes File.read(installation.manifest.query_file_for("Page")), "< ParademCmsSite::Query"
       refute_includes output.string, "synthetic-cli-token"
+    end
+  end
+
+  def test_real_subprocess_output_is_suppressed_on_success_and_failure
+    with_installation do |installation, events|
+      [0, 1].each do |exit_status|
+        output = StringIO.new
+        sync = ParademCmsSite::FullSync.new(installation, output: output)
+        # Exercise the default Open3 runner, not the simulated CLI runner above.
+        # Only the child's ENV contains the sentinel; argv never contains it.
+        script = <<~RUBY
+          STDOUT.puts ENV.fetch("DATOCMS_API_TOKEN")
+          STDERR.puts ENV.fetch("DATOCMS_API_TOKEN")
+          exit #{exit_status}
+        RUBY
+        stdout, stderr = capture_subprocess_io do
+          command = -> {
+            sync.send(:command!, "Schema export", {"DATOCMS_API_TOKEN" => "synthetic-child-output-token"}, RbConfig.ruby, "-e", script)
+          }
+          if exit_status.zero?
+            command.call
+          else
+            error = assert_raises(ParademCmsSite::FullSync::CommandError, &command)
+            assert_equal "Schema export failed; the CMS cache was not refreshed", error.message
+          end
+        end
+        assert_empty stdout
+        assert_empty stderr
+        assert_empty output.string
+        assert_empty events
+      end
     end
   end
 
