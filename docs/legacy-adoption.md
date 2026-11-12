@@ -11,9 +11,9 @@
 3. Verify installed wiring, locale/cache/query parity, preview isolation,
    authenticated enqueue-only webhooks and host callback behavior. Use synthetic
    content and disposable test databases, not a live sync as an installation test.
-4. Remove private-gem-only `BUNDLE_GITHUB__COM`/`CMS_GEMS_BUNDLE_AUTH` injection,
-   Docker build-secret mounts and deployment forwarding only after confirming no
-   other dependency uses them. Keep unrelated deployment/CMS/search credentials.
+4. Remove any leftover private-gem Bundler credential injection, Docker
+   build-secret mounts and deployment forwarding only after confirming no other
+   dependency uses them. Keep unrelated deployment/CMS/search credentials.
 5. Publish/merge the public ref before hosted consumer builds depend on it.
    Retain old private refs until deployed consumers no longer pin them. Never
    delete the only reachable ref for a lockfile SHA.
