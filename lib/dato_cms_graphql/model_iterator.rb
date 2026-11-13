@@ -23,7 +23,7 @@ module DatoCmsGraphql
     def each
       return to_enum(:each) unless block_given?
 
-      (0..@pages).each do |page|
+      (0...@pages).each do |page|
         res_page = @executor.query(@query, variables: {skip: @page_size * page})
 
         items = res_page["#{I18n.locale}_items"]

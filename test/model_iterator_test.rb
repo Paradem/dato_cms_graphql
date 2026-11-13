@@ -61,4 +61,39 @@ class ModelIteratorTest < Minitest::Test
     I18n.with_locale(:en) { @iterator.each { |_item| break } }
     assert_equal [[SyntheticQuery::INDEX, {skip: 0}]], @requests
   end
+
+  def test_page_requests_stop_at_the_declared_count
+    {
+      0 => [],
+      1 => [0],
+      2 => [0],
+      3 => [0, 2],
+      4 => [0, 2],
+      5 => [0, 2, 4]
+    }.each do |total, expected_skips|
+      stub_records(total)
+      iterator = DatoCmsGraphql::ModelIterator.new(SyntheticQuery)
+      I18n.with_locale(:en) do
+        ids = iterator.each.map { |item| item.attributes.fetch("id") }
+        assert_equal((0...total).map { |index| "en-#{index}" }, ids, "count=#{total}")
+      end
+      assert_equal total, iterator.count
+      assert_equal expected_skips, @requests.map { |_query, variables| variables.fetch(:skip) }, "count=#{total}"
+    end
+  end
+
+  private
+
+  def stub_records(total)
+    requests = @requests = []
+    DatoCmsGraphql.define_singleton_method(:count) { |_query| total }
+    DatoCmsGraphql.define_singleton_method(:query) do |query, variables:|
+      requests << [query, variables]
+      skip = variables.fetch(:skip)
+      last = [skip + 2, total].min
+      %w[en fr].to_h do |locale|
+        ["#{locale}_items", (skip...last).map { |index| {"id" => "#{locale}-#{index}"} }]
+      end
+    end
+  end
 end
