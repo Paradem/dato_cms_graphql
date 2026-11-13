@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+- Add a credential-free synthetic refresh benchmark and document the measured
+  BIC-sized peak RSS/duration plus the proposed (not yet agreed) budget.
 - Stop `ModelIterator` after the last counted page. Empty collections issue no
   index request, and exact/partial page counts issue only the required pages;
   yielded records and localized order are unchanged.

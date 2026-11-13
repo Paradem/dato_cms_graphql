@@ -134,7 +134,7 @@ syntax baseline are unchanged.
 After checking out the repo, run `bin/setup` to install dependencies. Then, run
 `bundle exec rake test` to run both isolated suites (`test:core` and `test:site`),
 including disposable Rails applications with synthetic content and HTTP blocked.
-Run `bundle exec standardrb` and `gem build dato_cms_graphql.gemspec` before committing. You can also run `bin/console` for an interactive
+Run `bundle exec standardrb` and `gem build dato_cms_graphql.gemspec` before committing. For refresh-scale measurements, run `bundle exec ruby benchmark/refresh.rb`; see [the benchmark guide](docs/refresh-benchmark.md). You can also run `bin/console` for an interactive
 prompt that will allow you to experiment.
 
 To install this gem onto your local machine, run `bundle exec rake install`. To
