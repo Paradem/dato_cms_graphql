@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+- Stop `ModelIterator` after the last counted page. Empty collections issue no
+  index request, and exact/partial page counts issue only the required pages;
+  yielded records and localized order are unchanged.
 - Refresh memoized CMS record projections after assignment, ActiveRecord writes,
   reload/duplication and in-place JSON edits. Unchanged payloads still reuse the
   parsed projection; string/integer locale mappings remain unchanged.
