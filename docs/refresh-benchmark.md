@@ -48,17 +48,17 @@ resident set, corroborating the sampler. The peak is roughly 7–8× the seriali
 cache because response data, normalized candidate rows and SQLite insertion
 representations coexist.
 
-## Proposed budget (owner acceptance required)
+## Budget
 
 The current Fly apps are configured with 2,048 MB (BIC) or 1,024 MB (Canada/CBNS).
 
-- **BIC-sized, one locale:** propose peak RSS **≤ 1.5 GiB** and sync total
-  **≤ 10 s** on comparable hardware. The reference run is ~0.74 GiB / ~1.26 s, so
-  it would pass with memory/time headroom.
-- **1 GiB hosts:** propose peak RSS **≤ 70% of configured memory (~717 MiB)** and
-  total ≤ 10 s for each host's own authored row/payload mix. Do not apply the
-  BIC-sized result blindly. At this synthetic 2-locale/30 KB size, measured peak
-  (1.32 GiB) exceeds a 1 GiB container.
+- **BIC-sized, one locale — accepted 2026-11-13 for 2 GB-class apps:** peak RSS
+  **≤ 1.5 GiB** and sync total **≤ 10 s** on comparable hardware. The reference run
+  is ~0.74 GiB / ~1.26 s, within budget.
+- **1 GiB hosts — not agreed/cleared:** require peak RSS **≤ 70% of configured
+  memory (~717 MiB)** and total ≤ 10 s for each host's own authored row/payload
+  mix. Do not apply the BIC-sized result blindly. At this synthetic 2-locale/30 KB
+  size, measured peak (1.32 GiB) exceeds a 1 GiB container.
 - Re-run when record count, average payload size, locale count, page size,
   concurrency, Ruby/ActiveRecord/SQLite version, container memory or host
   callbacks change. A budget is not a production performance certification.
@@ -66,8 +66,8 @@ The current Fly apps are configured with 2,048 MB (BIC) or 1,024 MB (Canada/CBNS
 Decision from this reference run: **no disk staging or insertion batching for the
 BIC-sized 2 GB app now**. For 1 GiB EN/FR hosts, the current in-memory path is not
 cleared by this synthetic result; measure the host's actual row/payload mix and
-consider bounded staging/batching if it exceeds the proposed headroom. No runtime
-change is made here.
+consider bounded staging/batching if it exceeds the headroom. No runtime change
+is made here.
 
 ## Limits
 
