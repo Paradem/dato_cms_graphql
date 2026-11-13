@@ -78,6 +78,72 @@ class PersistenceTest < Minitest::Test
     assert_equal Set["SyntheticGlobal"], DatoCmsGraphql::Rails::Persistence.cache_data
   end
 
+  def test_projection_tracks_assignment_and_active_record_write_paths
+    configure_cache(locales: [:en, :fr], mapping: {en: 0, fr: 1})
+    row = SyntheticPage.create!(locale: :en, cms_record: {"title" => "Original"})
+    projection = row.cms_record
+    assert_same projection, row.cms_record
+
+    row.cms_record = {"title" => "Assigned"}
+    assert_equal "Assigned", row.title
+    refute_same projection, row.cms_record
+
+    row[:cms_record] = {"title" => "Bracket assignment"}
+    assert_equal "Bracket assignment", row.title
+    row.write_attribute(:cms_record, {"title" => "Attribute write"})
+    assert_equal "Attribute write", row.title
+    row.update!(cms_record: {"title" => "Updated"})
+    assert_equal "Updated", row.title
+    row.update_columns(cms_record: {"title" => "Direct update"})
+    assert_equal "Direct update", row.title
+    assert_same row.cms_record, row.cms_record
+  end
+
+  def test_projection_refreshes_on_reload_and_is_not_shared_by_a_duplicate
+    configure_cache(locales: [:en], mapping: nil)
+    row = SyntheticPage.create!(locale: :en, cms_record: {"title" => "Original"})
+    assert_equal "Original", row.title
+    SyntheticPage.find(row.id).update!(cms_record: {"title" => "From database"})
+    assert_equal "Original", row.title
+    assert_equal "From database", row.reload.title
+
+    row.cms_record.title = "Presentation-only change"
+    assert_equal "From database", row.reload.title
+    duplicate = row.dup
+    refute_same row.cms_record, duplicate.cms_record
+    duplicate.cms_record.title = "Duplicate only"
+    assert_equal "From database", row.title
+    assert_equal "Duplicate only", duplicate.title
+  end
+
+  def test_projection_detects_in_place_nested_json_edits_and_field_removal
+    configure_cache(locales: [:en], mapping: nil)
+    row = SyntheticPage.new(locale: :en, cms_record: {"title" => "Original", "cover" => {"alt" => "Before"}, "tags" => ["first"]})
+    assert_equal "Before", row.cover.alt
+    assert row.respond_to?(:title)
+    row[:cms_record].fetch("cover").fetch("alt").replace("After")
+    assert_equal "After", row.cover.alt
+    row[:cms_record].fetch("tags") << "second"
+    assert_equal %w[first second], row.tags
+    row[:cms_record].delete("title")
+    refute row.respond_to?(:title)
+    assert_raises(NoMethodError) { row.title }
+  end
+
+  def test_projection_can_transition_between_nil_empty_and_present_payloads
+    configure_cache(locales: [:en], mapping: nil)
+    row = SyntheticPage.new(locale: :en, cms_record: nil)
+    assert_nil row.cms_record
+    row.cms_record = {}
+    assert_instance_of OpenStruct, row.cms_record
+    assert_same row.cms_record, row.cms_record
+    row.cms_record = {"title" => "Present"}
+    assert_equal "Present", row.title
+    row.cms_record = nil
+    assert_nil row.cms_record
+    refute row.respond_to?(:title)
+  end
+
   private
 
   def configure_cache(locales:, mapping:)

@@ -1,4 +1,5 @@
 require "active_support/concern"
+require "active_support/core_ext/object/deep_dup"
 
 module DatoCmsGraphql::Rails
   module CacheTable
@@ -35,10 +36,14 @@ module DatoCmsGraphql::Rails
     end
 
     def cms_record
-      @parsed ||= begin
-        data = read_attribute(:cms_record)
-        JSON.parse(data.to_json, object_class: OpenStruct)
-      end
+      data = read_attribute(:cms_record)
+      # Identity catches assignment/reload; a snapshot also catches in-place JSON edits.
+      return @parsed if defined?(@parsed_source) && @parsed_source.equal?(data) && @parsed_snapshot == data
+
+      @parsed = JSON.parse(data.to_json, object_class: OpenStruct)
+      @parsed_source = data
+      @parsed_snapshot = data.deep_dup
+      @parsed
     end
 
     def respond_to_missing?(method, *)

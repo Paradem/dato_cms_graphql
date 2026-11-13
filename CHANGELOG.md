@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+- Refresh memoized CMS record projections after assignment, ActiveRecord writes,
+  reload/duplication and in-place JSON edits. Unchanged payloads still reuse the
+  parsed projection; string/integer locale mappings remain unchanged.
 - Rails doctor checks every statically declared controller/action target, not
   only the webhook URL, so unimplemented optional capabilities fail diagnostics
   without dispatching requests or refreshing content.
