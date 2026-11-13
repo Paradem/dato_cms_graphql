@@ -73,9 +73,16 @@ matches DatoCMS's enum. Locales that collide after normalization are rejected.
 
 `cms:doctor` checks files, local query/schema validity, cache model/columns,
 explicit locale mapping, identity index, hooks, route/auth configuration, queue
-suitability and required environment-variable presence. It never syncs, invokes
-hooks, creates a missing database, introspects, verifies live tokens or certifies
-cache freshness. `cms-site doctor --root .` is the older filesystem-only check.
+suitability and required environment-variable presence. Every statically declared
+controller/action target must resolve to an implemented public action, including
+host-owned optional capabilities. Removing a disabled capability's route removes
+it from this check; a route declaration alone is not an implementation. Callable,
+mounted and dynamically selected targets still need host-specific checks, and
+hosts must request-test their enabled endpoints and authorization behavior.
+
+Doctor never dispatches route actions, syncs, invokes hooks, creates a missing
+database, introspects, verifies live tokens or certifies cache freshness.
+`cms-site doctor --root .` is the older filesystem-only check.
 
 See [configuration/webhooks](rails-integration.md) and
 [refresh semantics](runtime-sync.md) for callback and failure contracts.
