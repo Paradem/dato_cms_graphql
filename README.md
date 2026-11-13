@@ -30,19 +30,23 @@ I don't plan to publish this gem for a while, so for now install it from github.
 
 ## Usage
 
-In your application you define classes that will represent a query to the api.
+Define a `DatoCmsGraphql::BaseQuery` subclass for each collection. Conventionally
+these live in `app/queries`; the Rails integration loads them at boot, while a
+standalone client sets `DatoCmsGraphql.path_to_queries` to that directory.
 
 ```ruby
-class News < DatoCmsGraphql::GrapqlBase
+class NewsQuery < DatoCmsGraphql::BaseQuery
   graphql_fields(:id, :title)
 end
 
-# Usage
-
-News.all.each do |item| 
+NewsQuery.all.each do |item|
   # do something interesting with your news items.
 end
 ```
+
+`graphql_fields` compiles the collection and count documents against the
+configured schema. `.all` streams pages using the declared count; a query marked
+`single_instance(true)` uses `.get` instead.
 
 ## HTTP transport and published content
 

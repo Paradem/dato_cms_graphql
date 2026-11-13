@@ -22,6 +22,13 @@ class TestSchema < GraphQL::Schema
     field :_seo_meta_tags, [TagType], null: false
   end
 
+  class NewsType < GraphQL::Schema::Object
+    field :id, String, null: true
+    field :title, String, null: true
+    field :_editing_url, String, null: true
+    field :_seo_meta_tags, [TagType], null: false
+  end
+
   class MetaType < GraphQL::Schema::Object
     field :count, IntTypeType, null: false
   end
@@ -38,6 +45,22 @@ class TestSchema < GraphQL::Schema
       OpenStruct.new(
         count: 10
       )
+    end
+
+    field :_all_news_meta, MetaType, null: false
+    def _all_news_meta
+      OpenStruct.new(count: 1)
+    end
+
+    field :all_news, [NewsType], null: false do
+      argument :skip, IntTypeType, required: false
+      argument :locale, Locale, required: false
+      argument :first, IntTypeType, required: false
+      argument :fallback_locales, [Locale], required: false
+    end
+
+    def all_news(skip: 0, first: 100, **)
+      [OpenStruct.new(id: "synthetic-news", title: "Synthetic news", _editing_url: nil, _seo_meta_tags: [])].drop(skip).first(first)
     end
 
     field :all_under_tests, PersonType, null: false do
