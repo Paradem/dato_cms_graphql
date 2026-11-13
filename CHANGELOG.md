@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+- Rails doctor checks every statically declared controller/action target, not
+  only the webhook URL, so unimplemented optional capabilities fail diagnostics
+  without dispatching requests or refreshing content.
 - Support regional locale codes (`en-US`) end to end. Manifests and cache rows
   keep the declared spelling; query aliases, `SiteLocale`/fallback arguments,
   published-source keys, fixture lookup and the installer's generated schema use

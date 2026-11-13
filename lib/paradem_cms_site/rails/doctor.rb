@@ -37,6 +37,7 @@ module ParademCmsSite
         end
       end
       check_cache(issues)
+      check_route_targets(issues)
       if settings.fetch("webhook") != "disabled"
         issues << "Configure webhook authentication" unless config.webhook_authentication.respond_to?(:call)
         route = ::Rails.application.routes.recognize_path("/webhooks/dato", method: :post)
@@ -56,6 +57,19 @@ module ParademCmsSite
     end
 
     private
+
+    def check_route_targets(issues)
+      targets = ::Rails.application.routes.routes.filter_map do |route|
+        controller, action = route.defaults.values_at(:controller, :action)
+        [controller, action] if controller && action
+      end.uniq
+      targets.each do |controller, action|
+        klass = "#{controller.camelize}Controller".safe_constantize
+        unless klass && klass < ActionController::Metal && klass.action_methods.include?(action)
+          issues << "Unimplemented route target: #{controller}##{action}"
+        end
+      end
+    end
 
     def check_cache(issues)
       record = @installation.record_class

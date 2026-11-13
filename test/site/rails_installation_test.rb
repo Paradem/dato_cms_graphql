@@ -122,6 +122,23 @@ class RailsInstallationTest < Minitest::Test
         PageQuery.graphql_fields(:id, :nonexistent_field)
         abort "Invalid query not diagnosed" unless ParademCmsSite::RailsDoctor.new(ParademCmsSite.configuration.installation).problems.any? { |issue| issue.include?("query/schema") }
         PageQuery.graphql_fields(:id, :title, :permalink)
+        class CapabilityProbeController < ApplicationController
+          def index
+            raise "Doctor must not dispatch route actions"
+          end
+        end
+        Rails.application.routes.draw do
+          post "webhooks/dato", to: "paradem_cms_site/webhooks#create"
+          get "implemented", to: "capability_probe#index"
+          get "missing-controller", to: "unimplemented#show"
+          get "missing-action", to: "capability_probe#absent"
+          get "duplicate-target", to: "capability_probe#absent"
+          get "redirect", to: redirect("/implemented")
+        end
+        problems = ParademCmsSite::RailsDoctor.new(ParademCmsSite.configuration.installation).problems
+        expected = ["Unimplemented route target: unimplemented#show", "Unimplemented route target: capability_probe#absent"]
+        abort "Enabled capabilities not diagnosed: #{problems.inspect}" unless problems == expected
+        abort "Route validation changed cache" unless before == CmsRecord.order(:id).pluck(:cms_id, :locale, :cms_record)
         Rails.application.routes.draw { post "webhooks/dato", to: "application#wrong" }
         abort "Wrong webhook route not diagnosed" unless ParademCmsSite::RailsDoctor.new(ParademCmsSite.configuration.installation).problems.any? { |issue| issue.include?("Webhook route") }
         puts "FRESH_APP_PASS"
