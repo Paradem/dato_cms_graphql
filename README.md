@@ -4,7 +4,7 @@ DatoCMS GraphQL queries, transport policy and optional offline-first Rails integ
 
 ## Rails CMS integration
 
-Version 0.5.0 includes the former `paradem_cms_site` implementation in this public,
+Since 0.5.0, the former `paradem_cms_site` implementation ships in this public,
 MIT-licensed gem: query generation, atomic published-cache refresh, coordination,
 webhooks/jobs, an install generator and offline diagnostics. There is **one gem**;
 `ParademCmsSite` remains the integration namespace so existing routes, initializers
@@ -23,7 +23,9 @@ See [new Rails installation](docs/installation.md),
 [existing application migration](docs/legacy-adoption.md),
 [refresh semantics](docs/runtime-sync.md) and
 [webhooks/configuration](docs/rails-integration.md).
-Rails dependencies remain optional; client-only and Bridgetown usage is unchanged.
+Rails dependencies remain optional for client-only and Bridgetown usage. The
+**0.6.0 candidate** raises Ruby/ActiveSupport minimums as documented below; it is
+not yet a tagged or published release.
 Requiring `paradem_cms_site` or its tooling never contacts DatoCMS.
 ## Installation
 
@@ -144,8 +146,8 @@ To install this gem onto your local machine, run `bundle exec rake install`.
 Publication, tags/pushes and reviewed host repins require separate owner approval
 and the [release gates](docs/releases.md#versioning-and-upgrades). Do not run
 `rake release` as a validation step: it pushes Git refs and publishes a package.
-Generator source remains unreleased at version 0.5.0; a local green suite does not
-authorize release or deployment.
+Version **0.6.0** is a prepared candidate, not a tagged/published release. Green
+CI does not authorize release or deployment.
 
 ## Contributing
 

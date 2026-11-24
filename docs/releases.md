@@ -1,7 +1,7 @@
 # Compatibility, portability and release policy
 
-**2026-11-24: local source qualification, not a published release.** The gem
-version remains **0.5.0**; generator additions/default changes are **unreleased**.
+**2026-11-24: 0.6.0 candidate, not a tagged or published release.** The candidate
+includes generator additions, disabled-webhook defaults and new Ruby/AS minimums.
 This follows the coordinating project's **Rails + DatoCMS recipe v1**. Publication,
 tags, host repins, CMS operations and deployment require separate owner approval.
 
@@ -35,7 +35,12 @@ Tailwind **4.3.4** and Puma **8.0.4**.
 The former six-lane local proof at source `942e9ee` remains historical evidence,
 not an ongoing support commitment. The narrower candidate is qualified through
 [PR #19](https://github.com/Paradem/dato_cms_graphql/pull/19); record its exact
-successful head/run before release. On macOS ARM64 the narrowed candidate passes
+successful head/run before release. The narrowed pre-version-bump source `afae539`
+passed [hosted Ubuntu/Chrome run 45452396212](https://github.com/Paradem/dato_cms_graphql/actions/runs/45452396212),
+including all tests, advisory check, lint, package build and artifact upload. Its
+36 downloaded axe reports have zero violations/incompletes. The final 0.6.0 head
+must also pass; a prior green head does not qualify a changed candidate.
+On macOS ARM64 the narrowed candidate passes
 core **42 / 299**, site **129 / 1214**, generated two-shell app **7 / 50** and browser
 **3 / 320**, with no failures/errors/skips. The updated advisory scan reports zero
 findings after GraphQL **2.6.14 → 2.6.16**; no advisory is ignored.
@@ -121,7 +126,7 @@ retry the whole content replacement just to repeat a notification.
    changes in the changelog and release notes. While pre-1.0, additive features and
    breaking minimums/defaults/API/cache/query/job/locale changes require a reviewed minor
    release; compatible fixes use a patch. The new generators/disabled-webhook
-   default need a future minor release, not silent replacement of the 0.5.0 tag.
+   default are prepared as the 0.6.0 candidate, not silent replacement of 0.5.0.
    A future 1.0 additionally needs explicit compatibility/support commitments;
    this local milestone does not declare 1.0 or production stability.
 3. **Generated files belong to the host.** Provenance records generator version,

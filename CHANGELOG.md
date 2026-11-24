@@ -1,4 +1,4 @@
-## [Unreleased]
+## [0.6.0] - Unreleased candidate
 
 - Qualify two independently generated Rails sites and materially different
   host-owned shells with the same cache/components; cover real queued refresh,

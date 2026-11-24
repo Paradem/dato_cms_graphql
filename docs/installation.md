@@ -1,6 +1,6 @@
 # Install the optional Rails CMS integration
 
-`dato_cms_graphql` 0.5.0 includes query tooling, cache synchronization, webhooks,
+The `dato_cms_graphql` **0.6.0 candidate** includes query tooling, cache synchronization, webhooks,
 jobs and diagnostics. `ParademCmsSite` is the preserved API namespace, not another
 gem. The current unreleased candidate supports Ruby **4.0.10** and the latest
 Rails **8.1** patch (currently **8.1.4.1**) only. Rails supplies ActiveRecord,
