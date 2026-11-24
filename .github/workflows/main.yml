@@ -11,27 +11,16 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    name: Ruby ${{ matrix.ruby }} / Rails ${{ matrix.framework }}
-    strategy:
-      fail-fast: false
-      matrix:
-        ruby: ["3.2", "3.3", "3.4", "4.0.10"]
-        framework: [locked]
-        include:
-          - ruby: "3.2"
-            framework: "7.2"
-            gemfile: gemfiles/rails_7_2.gemfile
-          - ruby: "4.0.10"
-            framework: "8.0"
-            gemfile: gemfiles/rails_8_0.gemfile
-    env:
-      BUNDLE_GEMFILE: ${{ matrix.gemfile || 'Gemfile' }}
+    name: Ruby 4.0.10 / Rails 8.1
     steps:
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: ${{ matrix.ruby }}
+          ruby-version: "4.0.10"
           bundler-cache: true
+      - run: |
+          mkdir -p tmp/security
+          bundle exec bundle-audit check --update --format json --output tmp/security/bundle-audit.json
       - run: bundle exec rake test
         env:
           SE_SKIP_DRIVER_IN_PATH: "true"
@@ -40,8 +29,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: cms-evidence-${{ matrix.ruby }}-${{ matrix.framework }}
+          name: cms-evidence-ruby-4.0.10-rails-8.1
           path: |
             tmp/generator-evidence
             tmp/portability-evidence
+            tmp/security
           if-no-files-found: error

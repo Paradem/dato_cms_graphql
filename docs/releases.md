@@ -9,59 +9,48 @@ tags, host repins, CMS operations and deployment require separate owner approval
 
 | Surface | Policy / qualified boundary |
 |---|---|
-| Public client | MRI Ruby **>= 3.2**; declared ActiveSupport **>= 7.1, < 9**; `graphql-client ~> 0.23.0`, `ostruct`, `logger`. Rails/UI/browser dependencies remain optional. |
-| New Rails installation/generators | Rails **7.2, 8.0, 8.1** with matching framework components; SQLite **2.x** (`>= 2.1, < 3`). Older Rails, Rails 9, alternate Ruby engines and other database adapters are not fresh-site qualified. An admitted dependency range is not proof of every combination. |
+| Public client | MRI Ruby **4.0.10**; ActiveSupport **8.1.x**, at least **8.1.4.1**; `graphql-client ~> 0.23.0`, patched `graphql >= 2.6.16, < 3`, `ostruct`, `logger`. Rails/UI/browser dependencies remain optional. |
+| New Rails installation/generators | Latest **Rails 8.1** patch with matching framework components; currently **8.1.4.1**. SQLite **2.x** (`>= 2.1, < 3`). Older Rails/Ruby, alternate Ruby engines and other adapters are not supported by this candidate. |
 | Host UI starter | ViewComponent **4.x**, Propshaft **1.x**, importmap/Turbo **2.x**, Tailwind Rails **4.x** / Tailwind CSS **4.x**. Not Tailwind 3, a JS bundler migration or a shared UI engine. Existing hosts can keep their own presentation/adapters. |
-| Browser qualification | Actual Chrome; Selenium **4.41.x** for the Ruby 3.2-compatible development matrix, Capybara **3.40.x**, axe-core-capybara **4.11.x**, Puma **>= 8.0.4, < 9**. These are development/test dependencies, not client runtime requirements. Other browsers need separate qualification. |
+| Browser qualification | Actual Chrome; current Selenium **4.x**, Capybara **3.40.x**, axe-core-capybara **4.x**, Puma **>= 8.0.4, < 9**. These are development/test dependencies, not client runtime requirements. Other browsers need separate qualification. |
 
-Rails **7.2/8.0 require JSON 2.x** in these qualified bundles: their encoder passes
-`quirks_mode`, which JSON 3 removed. A host on those framework lines must declare
-`gem "json", "~> 2.0"` and review its lock; do not monkey-patch encoding or apply a
-global JSON cap to Rails 8.1. The alternate development Gemfiles make this explicit.
-Likewise newer Selenium releases can require Ruby 3.3; do not copy a newer-Ruby
-browser lock into a Ruby 3.2 project without checking it.
+**Owner decision, 2026-11-24:** support only Ruby **4.0.10** and the latest Rails
+**8.1** patch. The gem requires Ruby `~> 4.0.10` and ActiveSupport `~> 8.1.0,
+>= 8.1.4.1`; admitting future patches does not replace qualification. Older
+compatibility lanes/bundles, JSON 2 workarounds and the Ruby 3.2-driven Selenium
+restriction are removed. This is a breaking minimum change for the next minor
+release, not a change to already pinned 0.5.0 hosts. Recheck support/advisories and
+rerun the one supported job whenever a patch or lock moves.
 
-Use currently security-supported, patched Ruby/framework/dependency versions in
-production. Older interpreters below are compatibility fixtures, **not** an EOL or
-security endorsement. Raising a minimum/removing a supported line is a versioned,
-reviewed change. ActiveSupport 7.1's client dependency allowance does not qualify
-Rails 7.1 UI generation. Recheck compatibility and advisories whenever a lock moves.
+### Qualification
 
-### Executed local matrix
+Run the **entire** core/site suites, generated request/component and actual browser
+tests, production assets and credential-free eager boot on Ruby **4.0.10**, Rails
+**8.1.4.1**, using `Gemfile.lock`. No reduced smoke or missing-browser skips
+substitute for this job. Current resolutions include GraphQL **2.6.16**, JSON
+**3.1.0**, Selenium **4.54.0**, ViewComponent **4.24.0**, Propshaft **1.3.2**,
+importmap-rails **2.2.3**, turbo-rails **2.0.23**, tailwindcss-rails **4.7.0**,
+Tailwind **4.3.4** and Puma **8.0.4**.
 
-All six lanes below ran the **entire** core/site suites, generated request/component
-and actual browser tests, production assets and credential-free eager boot on
-macOS ARM64. Every lane: core **42 / 299**, site **129 / 1205**, zero
-failures/errors/skips. No reduced smoke or missing-browser skips substitute for a lane.
-
-| MRI | Rails | JSON | Dependency lock |
-|---|---|---|---|
-| 3.2.9 | 8.1.4.1 | 3.1.0 | `Gemfile.lock` |
-| 3.3.8 | 8.1.4.1 | 3.1.0 | `Gemfile.lock` |
-| 3.4.5 | 8.1.4.1 | 3.1.0 | `Gemfile.lock` |
-| **4.0.10** (development default) | 8.1.4.1 | 3.1.0 | `Gemfile.lock` |
-| 3.2.9 | 7.2.3 | 2.21.2 | `gemfiles/rails_7_2.gemfile.lock` |
-| 4.0.10 | 8.0.5.2 | 2.21.2 | `gemfiles/rails_8_0.gemfile.lock` |
-
-All use ViewComponent **4.24.0**, Propshaft **1.3.2**, importmap-rails **2.2.3**,
-turbo-rails **2.0.23**, tailwindcss-rails **4.7.0**, Tailwind **4.3.4**, Puma **8.0.4**,
-Selenium **4.41.0** and Chrome **157**. Exact resolutions/platforms live in the
-committed locks; the alternate locks preserve unrelated baseline versions.
+The former six-lane local proof at source `942e9ee` remains historical evidence,
+not an ongoing support commitment. The narrower candidate is qualified through
+[PR #19](https://github.com/Paradem/dato_cms_graphql/pull/19); record its exact
+successful head/run before release. On macOS ARM64 the narrowed candidate passes
+core **42 / 299**, site **129 / 1214**, generated two-shell app **7 / 50** and browser
+**3 / 320**, with no failures/errors/skips. The updated advisory scan reports zero
+findings after GraphQL **2.6.14 → 2.6.16**; no advisory is ignored.
 
 ```sh
 BUNDLE_FROZEN=true bundle install
 SE_SKIP_DRIVER_IN_PATH=true bundle exec rake test
 bundle exec standardrb
-# Minimum-framework lane, using its intended Ruby interpreter:
-BUNDLE_GEMFILE=gemfiles/rails_7_2.gemfile BUNDLE_FROZEN=true bundle install
-BUNDLE_GEMFILE=gemfiles/rails_7_2.gemfile SE_SKIP_DRIVER_IN_PATH=true bundle exec rake test
-# Repeat with gemfiles/rails_8_0.gemfile for the intermediate-framework lane.
+bundle exec bundle-audit check --update
 gem build dato_cms_graphql.gemspec --output /tmp/dato_cms_graphql.gem
 ```
 
-Ubuntu 24.04 CI is configured for the same six Ruby/framework lanes and artifact
-upload, but **hosted/Linux execution was not performed for this source change**.
-Neither that configuration nor local macOS results qualify production images.
+Ubuntu 24.04 CI has **one** Ruby 4.0.10 / Rails 8.1 job, including current advisory
+checks and artifact upload. A configured job is not a successful hosted run, and
+neither a green job nor local macOS results qualify existing hosts' production images.
 
 ## What fresh-site portability proves
 
@@ -91,7 +80,7 @@ Turbo locale navigation and cached-history restoration. Real fixture refresh see
 the prepared test DB; a pre-test process's cache is not assumed to survive Rails'
 test-schema preparation. Production CSS contains both shells and component utilities.
 
-Each lane retains **16 two-shell axe scans** plus **8 resource scans**, all with
+Each supported run retains **16 two-shell axe scans** plus **8 resource scans**, all with
 zero violations/incompletes; the earlier one-theme pilot adds **12** scans. There
 are no rule/node exclusions. Complete JSON/screenshots and nonsecret Ruby/platform/
 package versions are retained in `tmp/{generator,portability}-evidence/<ruby>/<rails>/`.
@@ -130,7 +119,7 @@ retry the whole content replacement just to repeat a notification.
    unchanged `0.5.0` version alone does not identify these additions.
 2. **Version intentional changes.** Record behavior/default/dependency/generator
    changes in the changelog and release notes. While pre-1.0, additive features and
-   breaking defaults/API/cache/query/job/locale changes require a reviewed minor
+   breaking minimums/defaults/API/cache/query/job/locale changes require a reviewed minor
    release; compatible fixes use a patch. The new generators/disabled-webhook
    default need a future minor release, not silent replacement of the 0.5.0 tag.
    A future 1.0 additionally needs explicit compatibility/support commitments;
@@ -143,7 +132,7 @@ retry the whole content replacement just to repeat a notification.
 4. **Qualify a candidate without live writes.** Record host/code/gem ref, lock,
    schema/export/override/query digests, locale mapping, cache shape and derived
    data hooks. Run doctor, offline contracts, both shells, exact viewports, axe,
-   assets/eager boot and all supported CI lanes. Review package allowlist, advisory
+   assets/eager boot and the supported CI job. Review package allowlist, advisory
    results and real worker/queue/image/memory/accessibility requirements. No missing
    lane or unresolved manual gate becomes green by omission.
 5. **Approve separately.** Hosted CI/Linux results, release version/tag/publication,

@@ -1,6 +1,0 @@
-# frozen_string_literal: true
-
-eval_gemfile "../Gemfile"
-gem "activesupport", "~> 8.0.0"
-# Rails before 8.1 passes quirks_mode, removed in JSON 3.
-gem "json", "~> 2.0"

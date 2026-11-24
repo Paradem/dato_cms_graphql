@@ -128,11 +128,11 @@ indexing pipeline. A failed call clears its ID tracking, not already-written row
 
 ## Development
 
-Use Ruby **4.0.10** (`.tool-versions`). CI pins that exact patch while retaining
-Ruby 3.2/3.3/3.4 coverage and Rails 7.2/8.0 compatibility lanes; the gem's minimum
-Ruby and lint syntax baseline are unchanged. See [compatibility, fresh-site
-portability and the release/upgrade policy](docs/releases.md), including the
-JSON 2.x requirement for Rails before 8.1 and the limits of local qualification.
+Support only Ruby **4.0.10** (`.tool-versions`) and the latest **Rails 8.1** patch
+(currently **8.1.4.1**). CI has one matching Ubuntu job; older compatibility bundles
+are removed. The unreleased candidate raises its Ruby/ActiveSupport minimums and
+requires patched GraphQL **>= 2.6.16**. See [compatibility, fresh-site portability
+and the release/upgrade policy](docs/releases.md). Existing host pins are not changed.
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run
 `bundle exec rake test` to run both isolated suites (`test:core` and `test:site`),

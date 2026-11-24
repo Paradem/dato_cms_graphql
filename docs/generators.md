@@ -8,8 +8,8 @@ No generator contacts CMS, applies a migration, publishes content or deploys.
 
 ## Small offline example
 
-Start in a Rails application with ViewComponent, Propshaft, importmap and
-Tailwind **4** installed normally. Keep the host's existing Hotwire setup.
+Start in Ruby **4.0.10** / latest Rails **8.1** (currently **8.1.4.1**) with
+ViewComponent, Propshaft, importmap and Tailwind **4** installed normally. Keep the host's existing Hotwire setup.
 Client-only users do not need any of these dependencies. Add Capybara, Selenium,
 Puma and `axe-core-capybara` to the application's test dependencies for browser
 contracts. Nothing edits the application's Gemfile or installs another gem.

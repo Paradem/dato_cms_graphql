@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require "pathname"
 require "yaml"
 require_relative "../dato_cms_graphql/locale"
 

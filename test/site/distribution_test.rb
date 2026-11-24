@@ -19,6 +19,17 @@ class DistributionTest < Minitest::Test
     assert_equal "cms-site", spec.executables.fetch(0)
     assert_empty spec.runtime_dependencies.map(&:name) & %w[paradem_cms_site railties activerecord activejob actionpack sqlite3 view_component propshaft importmap-rails turbo-rails tailwindcss-rails capybara selenium-webdriver axe-core-capybara puma]
     refute Gem.loaded_specs.key?("paradem_cms_site")
+    assert spec.required_ruby_version.satisfied_by?(Gem::Version.new("4.0.10"))
+    refute spec.required_ruby_version.satisfied_by?(Gem::Version.new("4.0.9"))
+    refute spec.required_ruby_version.satisfied_by?(Gem::Version.new("3.4.5"))
+    support = spec.runtime_dependencies.find { |dependency| dependency.name == "activesupport" }.requirement
+    assert support.satisfied_by?(Gem::Version.new("8.1.4.1"))
+    refute support.satisfied_by?(Gem::Version.new("8.1.4"))
+    refute support.satisfied_by?(Gem::Version.new("8.0.5.2"))
+    refute support.satisfied_by?(Gem::Version.new("8.2.0"))
+    graphql = spec.runtime_dependencies.find { |dependency| dependency.name == "graphql" }.requirement
+    assert graphql.satisfied_by?(Gem::Version.new("2.6.16"))
+    refute graphql.satisfied_by?(Gem::Version.new("2.6.15"))
   end
 
   def test_package_includes_all_integration_entry_points_and_no_private_or_development_files
