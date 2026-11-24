@@ -17,4 +17,16 @@ gem "actionpack", ">= 7.2", "< 9"
 gem "rack-test", "~> 2.2"
 gem "sqlite3", ">= 2.1", "< 3"
 
+# Optional UI generators are exercised in real offline Rails/browser fixtures.
+# These remain development-only; client users do not acquire a UI stack.
+gem "view_component", "~> 4.0"
+gem "propshaft", "~> 1.0"
+gem "importmap-rails", "~> 2.0"
+gem "turbo-rails", "~> 2.0"
+gem "tailwindcss-rails", "~> 4.0"
+gem "puma", ">= 8.0.4", "< 9"
+gem "capybara", "~> 3.40"
+gem "selenium-webdriver", "~> 4.41"
+gem "axe-core-capybara", "~> 4.11"
+
 gem "standard", "~> 1.3"

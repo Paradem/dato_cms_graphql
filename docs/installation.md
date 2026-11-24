@@ -23,27 +23,40 @@ CMS runtime credentials and webhook authentication are still required for real c
 
 ```sh
 bundle install
-bin/rails generate paradem_cms_site:install --site=my_site --fixture --locales=en,fr --models=Page,Global --singletons=Global
+bin/rails generate paradem_cms_site:install --site=my_site --fixture --locales=en,fr --models=Page,Global --singletons=Global --webhook=disabled
 bin/rails db:migrate
 bin/rails cms:doctor
 bin/rails cms:sync
 ```
 
-For an enabled webhook, supply `DATO_WEBHOOK_SECRET` securely. Choose
-`--webhook=hmac_sha256` or `--webhook=disabled` instead of the default
-`shared_header` when appropriate. Fixture content requires no CMS token, makes
+Webhooks now default to **disabled**. For an explicitly enabled
+`--webhook=shared_header` or `--webhook=hmac_sha256`, supply `DATO_WEBHOOK_SECRET`
+securely and configure the actual sender and an async job adapter. Fixture content requires no CMS token, makes
 no HTTP requests and is rejected in production.
 
 The installer generates only configuration, a dedicated cache model and owned
 subclasses, lazy query definitions, an unapplied migration and the selected
-route. `--cache-model=...` changes the default `CmsRecord` base. Fixture mode also
+route, operator notes and generator provenance. `--cache-model=...` changes the
+default `CmsRecord` base. Fixture mode also
 writes synthetic SDL/content under `config/cms/`. It does not copy services,
 controllers, jobs, workflows, authentication helpers or custom scripts.
 
 Use `--pretend` to preview. Identical reruns reuse the route/migration. Conflicts,
 existing alternate webhook routes, invalid names and escaping/symlinked paths are
-rejected before writes, even with `--force`. Do not use the installer as an updater
-for customized applications; see [migration](legacy-adoption.md).
+rejected before writes, even with `--force`; CLI errors return nonzero.
+`config/cms/generators.json` records options/version and managed-input checksums.
+Do not use the installer as an updater after resource generators or host edits
+have changed its outputs; see [migration](legacy-adoption.md).
+
+## Optional UI starters (unreleased source)
+
+The separate `resource`, `block` and `theme` generators create host-owned
+presentation and synthetic no-skip request/component/browser contracts. They do
+not copy a shared renderer, registry or behavior catalogue. ViewComponent and the
+host's Tailwind 4/Propshaft/importmap setup are explicit UI prerequisites, not new
+client runtime dependencies. See [commands, ownership, CI and limits](generators.md).
+The maintained fresh-app test also builds production assets and exercises actual
+Chrome; two-theme portability/release qualification remains separate.
 
 ## Real content
 

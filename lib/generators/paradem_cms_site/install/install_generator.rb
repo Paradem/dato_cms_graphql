@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "rails/generators"
+require "generators/paradem_cms_site/base"
 require "active_record"
 require "yaml"
 require "json"
@@ -8,13 +8,13 @@ require "paradem_cms_site"
 
 module ParademCmsSite
   module Generators
-    class InstallGenerator < ::Rails::Generators::Base
+    class InstallGenerator < Base
       class_option :site, type: :string, required: true, desc: "Stable website identifier"
       class_option :locales, type: :string, default: "en", desc: "Comma-separated CMS/UI locale codes"
       class_option :models, type: :string, default: "Page", desc: "Explicit owned model names"
       class_option :singletons, type: :string, default: "", desc: "Singleton models from the owned list"
       class_option :cache_model, type: :string, default: "CmsRecord"
-      class_option :webhook, type: :string, default: "shared_header", desc: "shared_header, hmac_sha256 or disabled"
+      class_option :webhook, type: :string, default: "disabled", desc: "shared_header, hmac_sha256 or disabled"
       class_option :fixture, type: :boolean, default: false, desc: "Install synthetic local schema/content for development/test"
 
       def install
@@ -29,21 +29,15 @@ module ParademCmsSite
             raise ::Rails::Generators::Error, "Model name #{name} collides with an existing constant"
           end
         end
-        (files.keys + ["config/routes.rb"]).each { |path| check_destination!(path) }
-        files.each do |relative, contents|
-          path = File.join(destination_root, relative)
-          if File.exist?(path) && (!File.file?(path) || File.binread(path) != contents)
-            raise ::Rails::Generators::Error, "Refusing to overwrite #{relative}; review and merge the existing application file"
-          end
+        raise Error, "Run this generator inside a standard Rails application" unless checked_path("config/routes.rb").file?
+        updates = {}
+        if options[:webhook] != "disabled"
+          add_route(files, updates, 'post "webhooks/dato", to: "paradem_cms_site/webhooks#create"', key: "install", marker: "webhooks/dato", route_name: "cms_webhook")
         end
-        routes = File.join(destination_root, "config/routes.rb")
-        raise ::Rails::Generators::Error, "Run this generator inside a standard Rails application" unless File.file?(routes)
-        route = 'post "webhooks/dato", to: "paradem_cms_site/webhooks#create"'
-        if options[:webhook] != "disabled" && File.read(routes).include?("webhooks/dato") && !File.read(routes).include?(route)
-          raise ::Rails::Generators::Error, "An existing /webhooks/dato route must be reviewed before installation"
-        end
-        files.each { |path, contents| create_file(path, contents) }
-        route(route) if options[:webhook] != "disabled" && !File.read(routes).include?(route)
+        managed = ["config/cms_site.yml"]
+        managed += %w[config/cms/schema.graphql config/cms/fixture.json] if options[:fixture]
+        parameters = options.to_h.slice(*%w[site locales models singletons cache_model webhook fixture])
+        write_scaffold("install", parameters, files, updates: updates, managed: managed)
         say "Next: bin/rails db:migrate, bin/rails cms:doctor, then bin/rails cms:sync", :green
         say "Supply a local CDA GraphQL schema and runtime secrets; no CMS request or migration was run." unless options[:fixture]
       end
@@ -78,17 +72,6 @@ module ParademCmsSite
         end
       end
 
-      def check_destination!(relative)
-        root = Pathname(destination_root).realpath
-        path = root.join(relative)
-        path = path.parent until path.exist? || path.symlink?
-        unless path.realpath == root || path.realpath.to_s.start_with?("#{root}/")
-          raise ::Rails::Generators::Error, "Installation paths must stay inside the Rails application"
-        end
-      rescue Errno::ENOENT
-        raise ::Rails::Generators::Error, "Dangling installation paths require review"
-      end
-
       def installation_files
         cache = options[:cache_model]
         table = cache.tableize
@@ -100,6 +83,7 @@ module ParademCmsSite
         files = {
           "config/cms_site.yml" => YAML.dump(manifest),
           "config/initializers/paradem_cms_site.rb" => initializer,
+          "docs/cms_setup.md" => setup_guide,
           "app/models/#{cache.underscore}.rb" => "# frozen_string_literal: true\n\nclass #{cache} < ApplicationRecord\n  self.table_name = #{table.inspect}\n  include ParademCmsSite::CacheRecord\nend\n",
           migration_path(table) => migration(table)
         }
@@ -116,6 +100,28 @@ module ParademCmsSite
           files[settings.fetch("fixture_data")] = JSON.pretty_generate(data) + "\n"
         end
         files
+      end
+
+      def setup_guide
+        <<~MARKDOWN
+          # CMS setup — generator #{ParademCmsSite::VERSION}
+
+          Site: `#{options[:site]}`. Locales: #{@locales.join(", ")}. Owned models: #{@models.join(", ")}.
+          Webhook: `#{options[:webhook]}`. Other optional capabilities remain host-owned and disabled until implemented/tested.
+
+          Review the generated files, then run `bin/rails db:migrate`, `bin/rails cms:doctor` and
+          `bin/rails cms:sync` explicitly. No database/CMS migration or remote request was run by the generator.
+          Fixture mode is synthetic, credential-free and development/test only. Live mode requires a
+          retained CDA schema and scoped runtime credentials; never commit credentials or private dumps.
+
+          Add UI starters separately with `paradem_cms_site:resource`, `:block` and `:theme`.
+          UI starters require ViewComponent; themes require Tailwind 4, Propshaft and importmap.
+          Generated application files become host-owned. `config/cms/generators.json` records the
+          generator/options and checksums of shared tool-owned inputs. Reruns are not an upgrade tool:
+          review customized files and preserve compatible code/query/schema/cache backups before release.
+          Run required request/component/browser tests without content-dependent skips; a green axe run
+          is not manual accessibility approval or WCAG certification. Publishing/deployment need separate approval.
+        MARKDOWN
       end
 
       def initializer
@@ -168,14 +174,8 @@ module ParademCmsSite
       end
 
       def fixture_schema
-        types = @models.map { |name| "type #{name}Record { id: ID!, title: String, permalink: String, _editingUrl: String, _seoMetaTags: [SeoTag!]! }" }
-        fields = @models.flat_map do |name|
-          if @singles.include?(name)
-            ["#{name.camelize(:lower)}(locale: SiteLocale, fallbackLocales: [SiteLocale!]): #{name}Record"]
-          else
-            ["all#{name.pluralize}(locale: SiteLocale, fallbackLocales: [SiteLocale!], first: IntType, skip: IntType): [#{name}Record!]!", "_all#{name.pluralize}Meta: RecordMeta!"]
-          end
-        end
+        types = @models.map { |name| fixture_type(name) }
+        fields = @models.flat_map { |name| fixture_query_fields(name, singleton: @singles.include?(name)) }
         "scalar IntType\nenum SiteLocale { #{@locales.map { |locale| DatoCmsGraphql::Locale.graphql(locale) }.join(" ")} }\ntype SeoTag { tag: String, content: String, attributes: String }\ntype RecordMeta { count: Int! }\n#{types.join("\n")}\ntype Query {\n  #{fields.join("\n  ")}\n}\n"
       end
     end

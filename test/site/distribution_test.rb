@@ -17,7 +17,7 @@ class DistributionTest < Minitest::Test
     assert_equal DatoCmsGraphql::VERSION, ParademCmsSite::VERSION
     assert_equal DatoCmsGraphql::VERSION, spec.version.to_s
     assert_equal "cms-site", spec.executables.fetch(0)
-    assert_empty spec.runtime_dependencies.map(&:name) & %w[paradem_cms_site railties activerecord activejob actionpack sqlite3]
+    assert_empty spec.runtime_dependencies.map(&:name) & %w[paradem_cms_site railties activerecord activejob actionpack sqlite3 view_component propshaft importmap-rails turbo-rails tailwindcss-rails capybara selenium-webdriver axe-core-capybara puma]
     refute Gem.loaded_specs.key?("paradem_cms_site")
   end
 
@@ -25,6 +25,11 @@ class DistributionTest < Minitest::Test
     files = specification.files
     %w[lib/paradem_cms_site.rb lib/paradem_cms_site/rails/installation.rb
       lib/paradem_cms_site/tasks.rake lib/generators/paradem_cms_site/install/install_generator.rb
+      lib/generators/paradem_cms_site/base.rb
+      lib/generators/paradem_cms_site/resource/resource_generator.rb
+      lib/generators/paradem_cms_site/block/block_generator.rb
+      lib/generators/paradem_cms_site/theme/theme_generator.rb
+      lib/paradem_cms_site/testing/system_test_case.rb
       lib/paradem_cms_site/sync/file_lock.rb exe/cms-site docs/installation.md LICENSE.txt].each do |path|
       assert_includes files, path
     end
