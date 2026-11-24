@@ -4,6 +4,8 @@
 jobs and diagnostics. `ParademCmsSite` is the preserved API namespace, not another
 gem. Rails 7.2–8.x supplies ActiveRecord, ActiveJob and ActionController; those
 are not runtime dependencies for client-only or Bridgetown installations.
+See [supported versions and release policy](releases.md); Rails 7.2/8.0 hosts
+must keep JSON 2.x because their encoder is incompatible with JSON 3.
 
 ## One dependency
 
@@ -55,8 +57,10 @@ presentation and synthetic no-skip request/component/browser contracts. They do
 not copy a shared renderer, registry or behavior catalogue. ViewComponent and the
 host's Tailwind 4/Propshaft/importmap setup are explicit UI prerequisites, not new
 client runtime dependencies. See [commands, ownership, CI and limits](generators.md).
-The maintained fresh-app test also builds production assets and exercises actual
-Chrome; two-theme portability/release qualification remains separate.
+The maintained fresh-app tests also build production assets and exercise actual
+Chrome, including two independent host shells. [Local portability acceptance and
+versioned upgrade/rollback policy](releases.md) keep hosted CI, publication and
+per-host operational/accessibility release gates separate.
 
 ## Real content
 

@@ -7,12 +7,6 @@ require "json"
 class RailsUiInstallationTest < Minitest::Test
   include RailsApplicationFixture
 
-  def source_snapshot(app)
-    Dir.glob(File.join(app, "**/*"), File::FNM_DOTMATCH).select { |path| File.file?(path) && path.match?(/\.(rb|erb|css|json|ya?ml|md)\z/) }.to_h do |path|
-      [path.delete_prefix("#{app}/"), File.binread(path)]
-    end
-  end
-
   def test_real_rails_ui_generators_requests_components_assets_and_required_browser_fixtures
     with_application(ui: true) do |app, environment|
       install = %w[generate paradem_cms_site:install --site=ui_fixture --fixture --models=Page,Global --singletons=Global --locales=en,fr]
@@ -79,14 +73,7 @@ class RailsUiInstallationTest < Minitest::Test
       assert_includes css, ".font-site-heading"
       assert_includes css, "--cms-surface"
     ensure
-      if app
-        output = File.join(ROOT, "tmp/generator-evidence")
-        FileUtils.mkdir_p(output)
-        %w[accessibility screenshots].each do |name|
-          source = File.join(app, "tmp", name)
-          FileUtils.cp_r(source, output) if File.directory?(source)
-        end
-      end
+      retain_browser_evidence(app, "generator")
     end
   end
 end

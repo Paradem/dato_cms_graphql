@@ -10,6 +10,25 @@ module RailsApplicationFixture
     --skip-dev-gems --skip-rubocop --skip-brakeman --skip-bundler-audit --skip-thruster
     --skip-action-mailer --skip-action-mailbox --skip-action-text --skip-active-storage --skip-action-cable].freeze
 
+  def source_snapshot(app)
+    Dir.glob(File.join(app, "**/*"), File::FNM_DOTMATCH).select { |path| File.file?(path) && path.match?(/(?:\.(rb|erb|css|json|ya?ml|md)|\/Gemfile(?:\.lock)?)\z/) }.to_h do |path|
+      [path.delete_prefix("#{app}/"), File.binread(path)]
+    end
+  end
+
+  def retain_browser_evidence(app, suite)
+    return unless app
+    output = File.join(ROOT, "tmp/#{suite}-evidence", RUBY_VERSION, Gem.loaded_specs.fetch("railties").version.to_s)
+    FileUtils.rm_rf(output)
+    FileUtils.mkdir_p(output)
+    %w[accessibility screenshots].each do |name|
+      source = File.join(app, "tmp", name)
+      FileUtils.cp_r(source, output) if File.directory?(source)
+    end
+    gems = Gem.loaded_specs.slice(*%w[railties activerecord json view_component propshaft importmap-rails turbo-rails tailwindcss-ruby puma selenium-webdriver axe-core-api]).transform_values { |spec| spec.version.to_s }
+    File.write(File.join(output, "environment.json"), JSON.pretty_generate({"ruby" => RUBY_VERSION, "platform" => RUBY_PLATFORM, "gems" => gems}) + "\n")
+  end
+
   def command(environment, *arguments, chdir:, success: true)
     stdout, stderr, status = Open3.capture3(environment, RbConfig.ruby, *arguments, chdir: chdir, unsetenv_others: true)
     if success
@@ -37,13 +56,13 @@ module RailsApplicationFixture
         end)
       RUBY
       environment = %w[PATH HOME GEM_HOME GEM_PATH SE_CHROMEDRIVER SE_SKIP_DRIVER_IN_PATH].to_h { |key| [key, ENV[key]] }.merge(
-        "BUNDLE_GEMFILE" => File.join(ROOT, "Gemfile"), "RUBYOPT" => "-r#{guard}", "RAILS_ENV" => "test",
+        "BUNDLE_GEMFILE" => Bundler.default_gemfile.to_s, "RUBYOPT" => "-r#{guard}", "RAILS_ENV" => "test",
         "SECRET_KEY_BASE" => "synthetic-test-secret-key-base-#{"0" * 64}",
         "DATO_API_TOKEN" => "sentinel-cms-token-not-live", "DATO_WEBHOOK_SECRET" => "fixture-webhook-secret"
       )
       app = File.join(directory, "fixture_site")
       command(environment, "-rbundler/setup", "-S", "rails", "new", app, *SKIPS, "--quiet", chdir: ROOT)
-      components = %w[railties activerecord activejob actionpack sqlite3].map { |name| gem_declaration(name, require_false: true) }
+      components = %w[railties activerecord activejob actionpack sqlite3 json].map { |name| gem_declaration(name, require_false: true) }
       if ui
         components += %w[view_component propshaft importmap-rails turbo-rails tailwindcss-rails].map { |name| gem_declaration(name) }
         components += %w[minitest capybara selenium-webdriver axe-core-capybara puma].map { |name| gem_declaration(name, require_false: true) }

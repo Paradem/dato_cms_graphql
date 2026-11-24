@@ -128,9 +128,11 @@ indexing pipeline. A failed call clears its ID tracking, not already-written row
 
 ## Development
 
-Use Ruby **4.0.9** (`.tool-versions`). CI pins that exact patch while retaining
-older supported-Ruby compatibility coverage; the gem's minimum Ruby and lint
-syntax baseline are unchanged.
+Use Ruby **4.0.10** (`.tool-versions`). CI pins that exact patch while retaining
+Ruby 3.2/3.3/3.4 coverage and Rails 7.2/8.0 compatibility lanes; the gem's minimum
+Ruby and lint syntax baseline are unchanged. See [compatibility, fresh-site
+portability and the release/upgrade policy](docs/releases.md), including the
+JSON 2.x requirement for Rails before 8.1 and the limits of local qualification.
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run
 `bundle exec rake test` to run both isolated suites (`test:core` and `test:site`),
@@ -138,11 +140,12 @@ including disposable Rails applications with synthetic content and HTTP blocked.
 Run `bundle exec standardrb` and `gem build dato_cms_graphql.gemspec` before committing. For refresh-scale measurements, run `bundle exec ruby benchmark/refresh.rb`; see [the benchmark guide](docs/refresh-benchmark.md). You can also run `bin/console` for an interactive
 prompt that will allow you to experiment.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To
-release a new version, update the version number in `version.rb`, and then run
-`bundle exec rake release`, which will create a git tag for the version, push
-git commits and the created tag, and push the `.gem` file to
-[rubygems.org](https://rubygems.org).
+To install this gem onto your local machine, run `bundle exec rake install`.
+Publication, tags/pushes and reviewed host repins require separate owner approval
+and the [release gates](docs/releases.md#versioning-and-upgrades). Do not run
+`rake release` as a validation step: it pushes Git refs and publishes a package.
+Generator source remains unreleased at version 0.5.0; a local green suite does not
+authorize release or deployment.
 
 ## Contributing
 

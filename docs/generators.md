@@ -140,7 +140,9 @@ page fixtures. A host-owned layout must supply the correct HTML language and
 accessible structure; use a generated theme or adapt the existing shell rather
 than skipping a failing locale. Actual axe scans have
 no rule/node exclusions; complete JSON (including incompletes) and screenshots
-are retained as CI artifacts. A missing browser, driver or fixture is a failure,
+are retained as CI artifacts. The gem's own fresh-app suites retain evidence by
+Ruby/framework under `tmp/{generator,portability}-evidence/`. A missing browser,
+driver or fixture is a failure,
 not a skip. `SE_SKIP_DRIVER_IN_PATH=true` lets Selenium Manager avoid an obsolete
 PATH driver; an explicit compatible `SE_CHROMEDRIVER` also works.
 
@@ -149,11 +151,13 @@ cover routing, locale rejection, renderability, escaping and missing
 optional fields. The maintained fresh-app test exercises all generators,
 reruns/pretend/conflicts, doctor/fixture sync, these tests, actual Chrome and a
 credential-free production eager boot/asset build. It is not a CMS migration,
-full production-image qualification or a release compatibility promise.
+full production-image qualification. The [compatibility/release policy](releases.md)
+records the executed Ruby/framework matrix, two-shell portability acceptance and
+explicit versioned upgrade/rollback boundary.
 
 Manually review real fonts/content, keyboard/screen-reader/zoom behavior, contrast
 and every incomplete axe result before release. No WCAG certification, provider
 integration, external search backend, hostile-CMS certification or production
 approval follows from a green generated test suite. Two materially different
-fresh-site themes and supported upgrade/release policy remain a separate
-portability milestone.
+fresh-site shells are now qualified locally without new shared UI abstractions;
+hosted CI/Linux and each host's release gates still require separate approval.

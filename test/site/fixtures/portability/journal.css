@@ -1,0 +1,25 @@
+[data-cms-theme="journal"] {
+  color-scheme: light;
+  --cms-surface: #fff7ed;
+  --cms-ink: #3f1d0b;
+  --cms-link: #7c2d12;
+  --cms-focus: #6b21a8;
+  --cms-font-body: Georgia, serif;
+  --cms-font-heading: Georgia, serif;
+}
+[data-cms-theme="journal"] body {
+  margin: 0;
+  background: var(--cms-surface);
+  color: var(--cms-ink);
+  font-family: var(--cms-font-body);
+}
+[data-cms-theme="journal"] a { color: var(--cms-link); }
+[data-cms-theme="journal"] :focus-visible { outline: 3px solid var(--cms-focus); outline-offset: 3px; }
+[data-cms-theme="journal"] .proof-header { padding: 2rem; border-bottom: 2px solid; text-align: center; }
+[data-cms-theme="journal"] .proof-brand { font-size: 2rem; font-weight: bold; }
+[data-cms-theme="journal"] .proof-languages { display: flex; justify-content: center; gap: 2rem; margin-top: 1rem; }
+[data-cms-theme="journal"] .proof-details { max-width: 45rem; margin: 2rem auto; padding: 1rem; border-block: 1px solid; }
+[data-cms-theme="journal"] .proof-home { text-align: center; padding: 1rem; font-style: italic; }
+[data-cms-theme="journal"] .proof-footer { padding: 2rem; border-top: 2px solid; text-align: center; }
+[data-cms-theme="journal"] .proof-skip { position: absolute; left: -10000px; }
+[data-cms-theme="journal"] .proof-skip:focus { position: fixed; top: 1rem; left: 1rem; background: var(--cms-surface); padding: 1rem; z-index: 10; }

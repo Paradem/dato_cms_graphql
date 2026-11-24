@@ -1,5 +1,14 @@
 ## [Unreleased]
 
+- Qualify two independently generated Rails sites and materially different
+  host-owned shells with the same cache/components; cover real queued refresh,
+  last-good/boot/derived-data failure semantics and matched artifact/cache cutback.
+  Document supported versions and versioned release/upgrade/rollback policy.
+- Keep Ruby 3.2 browser qualification on Selenium 4.41.x; newer releases require
+  Ruby 3.3. Add locked Rails 7.2/8.0 compatibility lanes with JSON 2.x (their encoder
+  is incompatible with JSON 3), retain Ruby 3.2/3.3/3.4 and move the development/CI
+  primary to Ruby 4.0.10. Client runtime requirements and host pins are unchanged.
+
 - Add optional host-owned resource, custom-block and theme generators with
   synthetic fixtures, path/controller/component/request contracts, scoped
   Tailwind wiring, native keyboard interactions and required actual axe/browser

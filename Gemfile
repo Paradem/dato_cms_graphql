@@ -26,7 +26,8 @@ gem "turbo-rails", "~> 2.0"
 gem "tailwindcss-rails", "~> 4.0"
 gem "puma", ">= 8.0.4", "< 9"
 gem "capybara", "~> 3.40"
-gem "selenium-webdriver", "~> 4.41"
+# Newer Selenium releases require Ruby 3.3; keep the Ruby 3.2 test boundary real.
+gem "selenium-webdriver", "~> 4.41.0"
 gem "axe-core-capybara", "~> 4.11"
 
 gem "standard", "~> 1.3"

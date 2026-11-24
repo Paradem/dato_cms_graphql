@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="<%= I18n.locale %>" data-cms-theme="folio">
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title><%= t("cms.folio.title") %></title>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+  <body>
+    <a href="#main-content" class="proof-skip"><%= t("cms.folio.skip") %></a>
+    <div class="proof-shell">
+      <aside class="proof-rail">
+        <p class="proof-brand">Folio</p>
+        <nav aria-label="<%= t('cms.folio.languages') %>" class="proof-languages">
+          <% %w[en fr].each do |locale| %>
+            <%= link_to locale, cms_folio_theme_path(locale: locale), lang: locale, hreflang: locale %>
+          <% end %>
+        </nav>
+        <p><%= t("cms.folio.body") %></p>
+      </aside>
+      <main id="main-content" tabindex="-1"><%= yield %></main>
+    </div>
+  </body>
+</html>
