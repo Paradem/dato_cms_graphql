@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description = "Query DatoCMS with explicit transport policy, or opt into offline-first Rails installation, query generation, atomic cache refresh and authenticated webhooks."
   spec.homepage = "https://github.com/Paradem/dato_cms_graphql"
   spec.license = "MIT"
-  spec.required_ruby_version = ">= 3.2.0"
+  spec.required_ruby_version = "~> 4.0.10"
 
   spec.metadata["allowed_push_host"] = ""
 
@@ -34,7 +34,8 @@ Gem::Specification.new do |spec|
   # spec.add_dependency "example-gem", "~> 1.0"
   #
   spec.add_dependency "graphql-client", "~> 0.23.0"
-  spec.add_dependency "activesupport", ">= 7.1", "< 9.0"
+  spec.add_dependency "graphql", ">= 2.6.16", "< 3"
+  spec.add_dependency "activesupport", "~> 8.1.0", ">= 8.1.4.1"
   spec.add_dependency "ostruct"
   spec.add_dependency "logger"
 

@@ -4,10 +4,12 @@
   host-owned shells with the same cache/components; cover real queued refresh,
   last-good/boot/derived-data failure semantics and matched artifact/cache cutback.
   Document supported versions and versioned release/upgrade/rollback policy.
-- Keep Ruby 3.2 browser qualification on Selenium 4.41.x; newer releases require
-  Ruby 3.3. Add locked Rails 7.2/8.0 compatibility lanes with JSON 2.x (their encoder
-  is incompatible with JSON 3), retain Ruby 3.2/3.3/3.4 and move the development/CI
-  primary to Ruby 4.0.10. Client runtime requirements and host pins are unchanged.
+- Support only Ruby 4.0.10 and latest Rails 8.1 (currently 8.1.4.1), per owner
+  decision. Raise Ruby/ActiveSupport minimums, remove legacy compatibility bundles/
+  CI lanes and use the Ruby 4 lint baseline. This is a breaking minimum change for
+  the next minor release; existing host pins are unchanged.
+- Require patched GraphQL >= 2.6.16 and add a current advisory check to CI. Update
+  development Selenium to 4.54.0; the former Ruby 3.2-driven restriction is removed.
 
 - Add optional host-owned resource, custom-block and theme generators with
   synthetic fixtures, path/controller/component/request contracts, scoped

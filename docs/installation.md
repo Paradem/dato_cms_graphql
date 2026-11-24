@@ -2,10 +2,12 @@
 
 `dato_cms_graphql` 0.5.0 includes query tooling, cache synchronization, webhooks,
 jobs and diagnostics. `ParademCmsSite` is the preserved API namespace, not another
-gem. Rails 7.2–8.x supplies ActiveRecord, ActiveJob and ActionController; those
-are not runtime dependencies for client-only or Bridgetown installations.
-See [supported versions and release policy](releases.md); Rails 7.2/8.0 hosts
-must keep JSON 2.x because their encoder is incompatible with JSON 3.
+gem. The current unreleased candidate supports Ruby **4.0.10** and the latest
+Rails **8.1** patch (currently **8.1.4.1**) only. Rails supplies ActiveRecord,
+ActiveJob and ActionController; those are not runtime dependencies for client-only
+or Bridgetown installations. See [supported versions and release policy](releases.md).
+Older deployed refs retain their original requirements; do not repin a host that
+has not qualified the new minimums.
 
 ## One dependency
 

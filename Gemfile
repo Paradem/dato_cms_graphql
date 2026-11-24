@@ -10,10 +10,10 @@ gem "rake", "~> 13.0"
 gem "minitest", ">= 5.25", "< 7"
 # Optional Rails integration dependencies are development-only. Client and
 # Bridgetown users do not acquire Rails, ActiveRecord or SQLite at runtime.
-gem "railties", ">= 7.2", "< 9"
-gem "activerecord", ">= 7.2", "< 9"
-gem "activejob", ">= 7.2", "< 9"
-gem "actionpack", ">= 7.2", "< 9"
+gem "railties", "~> 8.1.0", ">= 8.1.4.1"
+gem "activerecord", "~> 8.1.0", ">= 8.1.4.1"
+gem "activejob", "~> 8.1.0", ">= 8.1.4.1"
+gem "actionpack", "~> 8.1.0", ">= 8.1.4.1"
 gem "rack-test", "~> 2.2"
 gem "sqlite3", ">= 2.1", "< 3"
 
@@ -26,8 +26,8 @@ gem "turbo-rails", "~> 2.0"
 gem "tailwindcss-rails", "~> 4.0"
 gem "puma", ">= 8.0.4", "< 9"
 gem "capybara", "~> 3.40"
-# Newer Selenium releases require Ruby 3.3; keep the Ruby 3.2 test boundary real.
-gem "selenium-webdriver", "~> 4.41.0"
+gem "selenium-webdriver", "~> 4.52"
 gem "axe-core-capybara", "~> 4.11"
 
 gem "standard", "~> 1.3"
+gem "bundler-audit", "~> 0.9"
