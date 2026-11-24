@@ -1,66 +1,14 @@
 # frozen_string_literal: true
 
 require_relative "test_helper"
-require "open3"
-require "rbconfig"
-require "digest"
+require_relative "support/rails_application"
 
 class RailsInstallationTest < Minitest::Test
-  ROOT = File.expand_path("../..", __dir__)
-  SKIPS = %w[--skip-bundle --skip-git --skip-docker --skip-kamal --skip-ci --skip-javascript --skip-hotwire
-    --skip-asset-pipeline --skip-jbuilder --skip-solid --skip-system-test --skip-test --skip-bootsnap
-    --skip-dev-gems --skip-rubocop --skip-brakeman --skip-bundler-audit --skip-thruster
-    --skip-action-mailer --skip-action-mailbox --skip-action-text --skip-active-storage --skip-action-cable].freeze
-
-  def command(environment, *arguments, chdir:, success: true)
-    stdout, stderr, status = Open3.capture3(environment, RbConfig.ruby, *arguments, chdir: chdir, unsetenv_others: true)
-    if success
-      assert status.success?, "#{arguments.first(3).join(" ")} failed:\n#{stdout}\n#{stderr}"
-    else
-      refute status.success?, "Command unexpectedly succeeded: #{stdout}"
-    end
-    stdout + stderr
-  end
-
-  def with_application
-    Dir.mktmpdir("cms-fresh-rails-") do |directory|
-      guard = File.join(directory, "no_network.rb")
-      File.write(guard, <<~RUBY)
-        require "net/http"
-        Net::HTTP.prepend(Module.new do
-          def request(*)
-            raise "Network forbidden in Rails installation fixtures"
-          end
-        end)
-      RUBY
-      environment = %w[PATH HOME GEM_HOME GEM_PATH].to_h { |key| [key, ENV[key]] }.merge(
-        "BUNDLE_GEMFILE" => File.join(ROOT, "Gemfile"), "RUBYOPT" => "-r#{guard}", "RAILS_ENV" => "test",
-        "SECRET_KEY_BASE" => "synthetic-test-secret-key-base-#{"0" * 64}",
-        "DATO_API_TOKEN" => "sentinel-cms-token-not-live", "DATO_WEBHOOK_SECRET" => "fixture-webhook-secret"
-      )
-      app = File.join(directory, "fixture_site")
-      command(environment, "-rbundler/setup", "-S", "rails", "new", app, *SKIPS, "--quiet", chdir: ROOT)
-      components = %w[railties activerecord activejob actionpack sqlite3].map do |name|
-        "gem #{name.inspect}, #{Gem.loaded_specs.fetch(name).version.to_s.inspect}, require: false"
-      end
-      File.write(File.join(app, "Gemfile"), <<~RUBY)
-        source "https://rubygems.org"
-        #{components.join("\n")}
-        gem "dato_cms_graphql", path: #{ROOT.inspect}, require: "paradem_cms_site"
-      RUBY
-      environment["BUNDLE_GEMFILE"] = File.join(app, "Gemfile")
-      command(environment, "-S", "bundle", "lock", "--local", chdir: app)
-      yield app, environment
-    end
-  end
-
-  def rails(app, environment, *arguments, **options)
-    command(environment, File.join(app, "bin/rails"), *arguments, chdir: app, **options)
-  end
+  include RailsApplicationFixture
 
   def test_fresh_rails_fixture_install_doctor_sync_webhook_and_host_callback
     with_application do |app, environment|
-      arguments = %w[generate paradem_cms_site:install --site=fixture_site --fixture --locales=en,fr --models=Page,Global --singletons=Global]
+      arguments = %w[generate paradem_cms_site:install --site=fixture_site --fixture --locales=en,fr --models=Page,Global --singletons=Global --webhook=shared_header]
       rails(app, environment, *arguments)
       before = Dir[File.join(app, "db/migrate/*.rb")].to_h { |path| [path, File.binread(path)] }
       rails(app, environment, *arguments)
@@ -228,6 +176,9 @@ class RailsInstallationTest < Minitest::Test
       rails(app, environment, *args, "--pretend")
       refute File.exist?(File.join(app, "config/cms_site.yml"))
       rails(app, environment, *args)
+      missing_ui = rails(app, environment, "generate", "paradem_cms_site:resource", "Article", success: false)
+      assert_includes missing_ui, "Add view_component"
+      refute File.exist?(File.join(app, "app/models/article.rb"))
       manifest_path = File.join(app, "config/cms_site.yml")
       data = YAML.safe_load_file(manifest_path)
       data.fetch("rails")["allow_schema_introspection"] = true

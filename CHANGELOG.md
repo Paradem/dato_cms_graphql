@@ -1,5 +1,18 @@
 ## [Unreleased]
 
+- Add optional host-owned resource, custom-block and theme generators with
+  synthetic fixtures, path/controller/component/request contracts, scoped
+  Tailwind wiring, native keyboard interactions and required actual axe/browser
+  tests. No shared block catalogue, CMS write or deployment is generated.
+- Default new installations to disabled webhooks; callers enabling the old
+  behavior must explicitly pass `--webhook=shared_header` and configure its sender.
+  Add generator version/options and managed-input checksums, preflight all
+  conflicts (including `--force`) and return nonzero CLI failures. Removed routes
+  or asset wiring are not silently reenabled. Reruns are not application upgrades.
+- Qualify UI output in a disposable Rails app through fixture sync, real request/
+  component/Chrome tests and credential-free production assets/eager boot. UI and
+  browser gems are development-only; public runtime dependencies are unchanged.
+
 - Add a credential-free synthetic refresh benchmark and document the measured
   BIC-sized peak RSS/duration plus the proposed (not yet agreed) budget.
 - Stop `ModelIterator` after the last counted page. Empty collections issue no

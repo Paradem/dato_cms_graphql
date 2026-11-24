@@ -55,7 +55,7 @@ class InstallGeneratorTest < Minitest::Test
     with_app do |root|
       File.write(File.join(root, "config/routes.rb"), "Rails.application.routes.draw do\n  post \"webhooks/dato\", to: \"existing#create\"\nend\n")
       before = snapshot(root)
-      assert_raises(Rails::Generators::Error) { install(root) }
+      assert_raises(Rails::Generators::Error) { install(root, webhook: "shared_header") }
       assert_equal before, snapshot(root)
     end
   end
@@ -65,7 +65,8 @@ class InstallGeneratorTest < Minitest::Test
       before = snapshot(root)
       install(root, pretend: true)
       assert_equal before, snapshot(root)
-      install(root, webhook: "disabled")
+      install(root)
+      assert_equal "disabled", ParademCmsSite::Manifest.load(root: root).data.fetch("rails").fetch("webhook")
       assert_equal before.fetch(File.join(root, "config/routes.rb")), File.read(File.join(root, "config/routes.rb"))
     end
   end

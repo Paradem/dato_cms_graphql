@@ -23,5 +23,13 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
       - run: bundle exec rake test
+        env:
+          SE_SKIP_DRIVER_IN_PATH: "true"
       - run: bundle exec standardrb
       - run: gem build dato_cms_graphql.gemspec --output /tmp/dato_cms_graphql.gem
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cms-generator-evidence-${{ matrix.ruby }}
+          path: tmp/generator-evidence
+          if-no-files-found: error

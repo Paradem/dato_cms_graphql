@@ -19,6 +19,7 @@ gem "dato_cms_graphql", git: "https://github.com/Paradem/dato_cms_graphql.git",
 ```
 
 See [new Rails installation](docs/installation.md),
+[host-owned resource/block/theme generators (unreleased source)](docs/generators.md),
 [existing application migration](docs/legacy-adoption.md),
 [refresh semantics](docs/runtime-sync.md) and
 [webhooks/configuration](docs/rails-integration.md).
