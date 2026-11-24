@@ -1,0 +1,9 @@
+<div data-cms-proof-id="<%= @article.cms_id %>" data-cms-proof-locale="<%= @article.locale %>">
+  <%= render Site::ArticleComponent.new(record: @article) %>
+  <p class="proof-home"><%= @home.title %></p>
+  <%= render Site::Blocks::Promo.new(resource: @promo) %>
+  <details class="proof-details">
+    <summary><%= t("cms.#{controller_name.delete_suffix('_theme')}.details") %></summary>
+    <p><%= @home.title %></p>
+  </details>
+</div>

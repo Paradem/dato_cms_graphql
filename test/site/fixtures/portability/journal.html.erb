@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="<%= I18n.locale %>" data-cms-theme="journal">
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title><%= t("cms.journal.title") %></title>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+  <body>
+    <a href="#main-content" class="proof-skip"><%= t("cms.journal.skip") %></a>
+    <header class="proof-header">
+      <p class="proof-brand">Journal</p>
+      <nav aria-label="<%= t('cms.journal.languages') %>" class="proof-languages">
+        <% %w[en fr].each do |locale| %>
+          <%= link_to locale, cms_journal_theme_path(locale: locale), lang: locale, hreflang: locale %>
+        <% end %>
+      </nav>
+    </header>
+    <main id="main-content" tabindex="-1"><%= yield %></main>
+    <footer class="proof-footer"><p><%= t("cms.journal.body") %></p></footer>
+  </body>
+</html>

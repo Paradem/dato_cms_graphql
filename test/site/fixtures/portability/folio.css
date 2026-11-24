@@ -1,0 +1,31 @@
+[data-cms-theme="folio"] {
+  color-scheme: dark;
+  --cms-surface: #0f172a;
+  --cms-ink: #f8fafc;
+  --cms-link: #7dd3fc;
+  --cms-focus: #fde047;
+  --cms-font-body: Arial, sans-serif;
+  --cms-font-heading: Arial, sans-serif;
+}
+[data-cms-theme="folio"] body {
+  margin: 0;
+  background: var(--cms-surface);
+  color: var(--cms-ink);
+  font-family: var(--cms-font-body);
+}
+[data-cms-theme="folio"] a { color: var(--cms-link); }
+[data-cms-theme="folio"] :focus-visible { outline: 3px solid var(--cms-focus); outline-offset: 3px; }
+[data-cms-theme="folio"] .proof-shell { display: grid; grid-template-columns: minmax(0, 1fr); }
+[data-cms-theme="folio"] .proof-rail { padding: 2rem; border-bottom: 1px solid; background: #1e293b; }
+[data-cms-theme="folio"] .proof-brand { font-size: 2rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.15em; }
+[data-cms-theme="folio"] .proof-languages { display: flex; gap: 2rem; margin-block: 2rem; }
+[data-cms-theme="folio"] main { min-width: 0; padding: 1rem; }
+[data-cms-theme="folio"] article { margin: 0; }
+[data-cms-theme="folio"] .proof-details { margin: 1.5rem; padding: 1rem; border: 1px solid; border-radius: 1rem; }
+[data-cms-theme="folio"] .proof-home { margin: 1.5rem; padding: 1rem; border-left: 0.5rem solid var(--cms-link); }
+[data-cms-theme="folio"] .proof-skip { position: absolute; left: -10000px; }
+[data-cms-theme="folio"] .proof-skip:focus { position: fixed; top: 1rem; left: 1rem; background: var(--cms-surface); padding: 1rem; z-index: 10; }
+@media (min-width: 48rem) {
+  [data-cms-theme="folio"] .proof-shell { grid-template-columns: 14rem minmax(0, 1fr); min-height: 100vh; }
+  [data-cms-theme="folio"] .proof-rail { border-bottom: 0; border-right: 1px solid; }
+}

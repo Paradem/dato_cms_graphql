@@ -11,11 +11,21 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    name: Ruby ${{ matrix.ruby }}
+    name: Ruby ${{ matrix.ruby }} / Rails ${{ matrix.framework }}
     strategy:
       fail-fast: false
       matrix:
-        ruby: ["3.2", "3.3", "3.4", "4.0.9"]
+        ruby: ["3.2", "3.3", "3.4", "4.0.10"]
+        framework: [locked]
+        include:
+          - ruby: "3.2"
+            framework: "7.2"
+            gemfile: gemfiles/rails_7_2.gemfile
+          - ruby: "4.0.10"
+            framework: "8.0"
+            gemfile: gemfiles/rails_8_0.gemfile
+    env:
+      BUNDLE_GEMFILE: ${{ matrix.gemfile || 'Gemfile' }}
     steps:
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
@@ -30,6 +40,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: cms-generator-evidence-${{ matrix.ruby }}
-          path: tmp/generator-evidence
+          name: cms-evidence-${{ matrix.ruby }}-${{ matrix.framework }}
+          path: |
+            tmp/generator-evidence
+            tmp/portability-evidence
           if-no-files-found: error
