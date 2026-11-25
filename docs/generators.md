@@ -1,4 +1,4 @@
-# Host-owned Rails generators (unreleased source)
+# Host-owned Rails generators (0.6.0 release)
 
 The optional `ParademCmsSite` integration provides `install`, `resource`, `block`
 and `theme`. These are new-site starters, not an application updater, shared UI

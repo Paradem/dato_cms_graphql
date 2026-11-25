@@ -1,8 +1,8 @@
 # Install the optional Rails CMS integration
 
-The `dato_cms_graphql` **0.6.0 candidate** includes query tooling, cache synchronization, webhooks,
+The `dato_cms_graphql` **0.6.0** includes query tooling, cache synchronization, webhooks,
 jobs and diagnostics. `ParademCmsSite` is the preserved API namespace, not another
-gem. The current unreleased candidate supports Ruby **4.0.10** and the latest
+gem. The current release supports Ruby **4.0.10** and the latest
 Rails **8.1** patch (currently **8.1.4.1**) only. Rails supplies ActiveRecord,
 ActiveJob and ActionController; those are not runtime dependencies for client-only
 or Bridgetown installations. See [supported versions and release policy](releases.md).
@@ -11,7 +11,8 @@ has not qualified the new minimums.
 
 ## One dependency
 
-Until an approved release is available, pin a reviewed public commit:
+Pin the tagged release commit (`v0.6.0`, source `d1e750f`) or another reviewed
+immutable public commit:
 
 ```ruby
 gem "dato_cms_graphql", git: "https://github.com/Paradem/dato_cms_graphql.git",
@@ -52,7 +53,7 @@ rejected before writes, even with `--force`; CLI errors return nonzero.
 Do not use the installer as an updater after resource generators or host edits
 have changed its outputs; see [migration](legacy-adoption.md).
 
-## Optional UI starters (unreleased source)
+## Optional UI starters
 
 The separate `resource`, `block` and `theme` generators create host-owned
 presentation and synthetic no-skip request/component/browser contracts. They do

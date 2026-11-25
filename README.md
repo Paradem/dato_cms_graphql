@@ -19,13 +19,13 @@ gem "dato_cms_graphql", git: "https://github.com/Paradem/dato_cms_graphql.git",
 ```
 
 See [new Rails installation](docs/installation.md),
-[host-owned resource/block/theme generators (unreleased source)](docs/generators.md),
+[host-owned resource/block/theme generators](docs/generators.md),
 [existing application migration](docs/legacy-adoption.md),
 [refresh semantics](docs/runtime-sync.md) and
 [webhooks/configuration](docs/rails-integration.md).
 Rails dependencies remain optional for client-only and Bridgetown usage. The
-**0.6.0 candidate** raises Ruby/ActiveSupport minimums as documented below; it is
-not yet a tagged or published release.
+**0.6.0** raises Ruby/ActiveSupport minimums as documented below; it is tagged
+`v0.6.0` with the built gem attached to the GitHub release, not published to RubyGems.
 Requiring `paradem_cms_site` or its tooling never contacts DatoCMS.
 ## Installation
 
@@ -132,7 +132,7 @@ indexing pipeline. A failed call clears its ID tracking, not already-written row
 
 Support only Ruby **4.0.10** (`.tool-versions`) and the latest **Rails 8.1** patch
 (currently **8.1.4.1**). CI has one matching Ubuntu job; older compatibility bundles
-are removed. The unreleased candidate raises its Ruby/ActiveSupport minimums and
+are removed. The 0.6.0 release raises its Ruby/ActiveSupport minimums and
 requires patched GraphQL **>= 2.6.16**. See [compatibility, fresh-site portability
 and the release/upgrade policy](docs/releases.md). Existing host pins are not changed.
 
@@ -146,8 +146,9 @@ To install this gem onto your local machine, run `bundle exec rake install`.
 Publication, tags/pushes and reviewed host repins require separate owner approval
 and the [release gates](docs/releases.md#versioning-and-upgrades). Do not run
 `rake release` as a validation step: it pushes Git refs and publishes a package.
-Version **0.6.0** is a prepared candidate, not a tagged/published release. Green
-CI does not authorize release or deployment.
+Version **0.6.0** is released at tag `v0.6.0` (source `d1e750f`) with its `.gem`
+attached to the GitHub release; it is not published to RubyGems. Green CI does not
+authorize host repins or deployment; those keep their separate approvals.
 
 ## Contributing
 

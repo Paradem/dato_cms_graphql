@@ -1,6 +1,7 @@
 # Compatibility, portability and release policy
 
-**2026-11-24: 0.6.0 candidate, not a tagged or published release.** The candidate
+**2026-11-25: 0.6.0 released.** Tag `v0.6.0` (source `d1e750f`) carries the built
+gem on the GitHub release; it is not published to RubyGems.org. The candidate
 includes generator additions, disabled-webhook defaults and new Ruby/AS minimums.
 This follows the coordinating project's **Rails + DatoCMS recipe v1**. Publication,
 tags, host repins, CMS operations and deployment require separate owner approval.
@@ -126,7 +127,7 @@ retry the whole content replacement just to repeat a notification.
    changes in the changelog and release notes. While pre-1.0, additive features and
    breaking minimums/defaults/API/cache/query/job/locale changes require a reviewed minor
    release; compatible fixes use a patch. The new generators/disabled-webhook
-   default are prepared as the 0.6.0 candidate, not silent replacement of 0.5.0.
+   default are released as 0.6.0, not silent replacement of 0.5.0.
    A future 1.0 additionally needs explicit compatibility/support commitments;
    this local milestone does not declare 1.0 or production stability.
 3. **Generated files belong to the host.** Provenance records generator version,

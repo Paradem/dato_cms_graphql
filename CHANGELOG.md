@@ -1,4 +1,8 @@
-## [0.6.0] - Unreleased candidate
+## [0.6.0] - 2026-11-25
+
+Released as tag `v0.6.0` (source `d1e750f`) with the built `.gem` attached to the
+GitHub release; not published to RubyGems.org. The dated qualification notes below
+describe the pre-release candidate, whose code is the released source.
 
 - Qualify two independently generated Rails sites and materially different
   host-owned shells with the same cache/components; cover real queued refresh,
