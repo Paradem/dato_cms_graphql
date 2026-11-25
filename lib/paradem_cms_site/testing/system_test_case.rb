@@ -2,6 +2,7 @@
 
 require "action_dispatch/system_test_case"
 require "axe/configuration"
+require "capybara/selenium/driver_specializations/chrome_driver"
 require "json"
 require "fileutils"
 require "securerandom"
@@ -23,6 +24,36 @@ module ParademCmsSite
       end
     end
     Net::HTTP.prepend(LoopbackHttp)
+
+    # Chrome 158 rejects origin "*" for Storage.clearDataForOrigin; Capybara 3.40
+    # still sends it. Vendored from Capybara PR #2868 until a release fixes it.
+    module ChromeStorageResetFallback
+      def reset!
+        @capybara_reset_origin = begin
+          uri = URI.parse(current_url)
+          uri.origin if %w[http https].include?(uri.scheme)
+        rescue URI::InvalidURIError
+          nil
+        end
+        super
+      ensure
+        @capybara_reset_origin = nil
+      end
+
+      private
+
+      def execute_cdp(cmd, params = {})
+        super
+      rescue Selenium::WebDriver::Error::InvalidArgumentError
+        raise unless cmd == "Storage.clearDataForOrigin" && params[:origin] == "*"
+
+        super("Network.clearBrowserCookies")
+        return unless @capybara_reset_origin && params[:storageTypes].to_s.include?("local_storage")
+
+        super("Storage.clearDataForOrigin", origin: @capybara_reset_origin, storageTypes: "local_storage")
+      end
+    end
+    Capybara::Selenium::Driver::ChromeDriver.prepend(ChromeStorageResetFallback)
 
     class SystemTestCase < ActionDispatch::SystemTestCase
       driven_by :selenium, using: :headless_chrome do |options|
