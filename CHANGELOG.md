@@ -1,3 +1,15 @@
+## [0.7.0] - Unreleased
+
+- Share saved-draft preview: a project-scoped `ParademCmsSite::Preview::Configuration`
+  (models, locales, TTL, signing verifier, plugin origin), short-lived scoped grant,
+  draft-only transport with its own read-only credential and explicit environment,
+  exact-locale fetch through the host's existing query fields, and controller
+  concerns for the preview route and the DatoCMS Web Previews issuer. The boundary
+  forbids caching/indexing/framing/conditional 304s, verifies before any network
+  call and maps invalid grants to 401, missing records to 404 and unconfigured or
+  upstream failures to 503. Hosts keep routes, templates, model construction and
+  their own model list; `cms:doctor` flags incomplete or duplicated credentials.
+
 ## [0.6.0] - 2026-11-25
 
 Released as tag `v0.6.0` (source `d1e750f`) with the built `.gem` attached to the

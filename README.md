@@ -22,7 +22,8 @@ See [new Rails installation](docs/installation.md),
 [host-owned resource/block/theme generators](docs/generators.md),
 [existing application migration](docs/legacy-adoption.md),
 [refresh semantics](docs/runtime-sync.md) and
-[webhooks/configuration](docs/rails-integration.md).
+[webhooks/configuration](docs/rails-integration.md) and optional
+[saved-draft preview](docs/preview.md).
 Rails dependencies remain optional for client-only and Bridgetown usage. The
 **0.6.0** raises Ruby/ActiveSupport minimums as documented below; it is tagged
 `v0.6.0` with the built gem attached to the GitHub release, not published to RubyGems.

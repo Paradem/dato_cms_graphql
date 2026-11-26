@@ -1,10 +1,16 @@
 # frozen_string_literal: true
 
+require_relative "../preview"
+
 module ParademCmsSite
   class WebhookRejected < StandardError; end
 
   class Configuration
     attr_accessor :sync, :webhook_authentication, :webhook_context, :installation, :within_transaction, :after_sync, :on_error
+
+    def preview
+      @preview ||= Preview::Configuration.new
+    end
 
     def refresh(context = {})
       raise ConfigurationError, "Configure the shared CMS sync callable" unless sync.respond_to?(:call)

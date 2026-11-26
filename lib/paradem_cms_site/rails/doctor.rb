@@ -37,6 +37,7 @@ module ParademCmsSite
         end
       end
       check_cache(issues)
+      check_preview(issues)
       check_route_targets(issues)
       if settings.fetch("webhook") != "disabled"
         issues << "Configure webhook authentication" unless config.webhook_authentication.respond_to?(:call)
@@ -68,6 +69,20 @@ module ParademCmsSite
         unless klass && klass < ActionController::Metal && klass.action_methods.include?(action)
           issues << "Unimplemented route target: #{controller}##{action}"
         end
+      end
+    end
+
+    def check_preview(issues)
+      preview = ParademCmsSite.configuration.preview
+      return unless preview.enabled
+
+      unless preview.configured?
+        issues << "Configure saved-draft preview settings or disable preview"
+        return
+      end
+      published = ENV["DATO_API_TOKEN"].to_s
+      if published.present? && preview.api_token_value == published
+        issues << "Preview token must differ from DATO_API_TOKEN"
       end
     end
 
