@@ -48,13 +48,15 @@ module ParademCmsSite
       end
 
       # Returns an underscored payload hash for the host to build an unsaved record.
-      def preview_record(model:, fields:, root: model)
+      # Pass root:/singleton: for DatoCMS single-instance or camel-cased roots.
+      def preview_record(model:, fields:, root: model, singleton: false)
         preview_client.fetch(
           model: model,
           root: root,
           fields: fields,
           cms_id: preview_scope.fetch("cms_id"),
-          locale: preview_scope.fetch("locale")
+          locale: preview_scope.fetch("locale"),
+          singleton: singleton
         )
       end
 

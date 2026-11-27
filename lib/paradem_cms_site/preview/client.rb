@@ -45,13 +45,15 @@ module ParademCmsSite
       end
 
       # Returns the saved record payload as an underscored hash. The host builds
-      # its own unsaved model so nothing is persisted or indexed.
-      def fetch(model:, root:, fields:, cms_id:, locale:)
+      # its own unsaved model so nothing is persisted or indexed. Singleton
+      # DatoCMS models have no id filter; fetch by locale and verify the id.
+      def fetch(model:, root:, fields:, cms_id:, locale:, singleton: false)
         unless @configuration.model?(model) && @configuration.identifier?(cms_id) && @configuration.locale?(locale)
           raise NotFound
         end
 
-        response = @graphql.query(document_for(root, fields), variables: {id: cms_id, locale: locale})
+        response = @graphql.query(document_for(root, fields, singleton: singleton),
+          variables: singleton ? {locale: locale} : {id: cms_id, locale: locale})
         raise Unavailable if response.errors.all.any?
 
         payload = response.data.to_h.fetch(root)
@@ -65,11 +67,27 @@ module ParademCmsSite
 
       private
 
-      def document_for(root, fields)
+      def document_for(root, fields, singleton:)
         @documents ||= {}
-        @documents[[root, fields]] ||= @graphql.parse(<<~GRAPHQL)
+        @documents[[root, fields, singleton]] ||= @graphql.parse(<<~GRAPHQL)
+          #{singleton ? singleton_query(root, fields) : collection_query(root, fields)}
+        GRAPHQL
+      end
+
+      def collection_query(root, fields)
+        <<~GRAPHQL.chomp
           query($id: ItemId!, $locale: SiteLocale!) {
             #{root}(filter: {id: {eq: $id}}, locale: $locale, fallbackLocales: []) {
+              #{fields}
+            }
+          }
+        GRAPHQL
+      end
+
+      def singleton_query(root, fields)
+        <<~GRAPHQL.chomp
+          query($locale: SiteLocale!) {
+            #{root}(locale: $locale, fallbackLocales: []) {
               #{fields}
             }
           }

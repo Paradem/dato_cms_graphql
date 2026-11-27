@@ -65,11 +65,24 @@ end
 `preview_record` returns the underscored payload for the granted record and
 locale, fetched with `fallbackLocales: []` through the host's own `fields`
 selection. Dropping the unsaved record into the existing view keeps preview and
-published rendering identical. The concern sets `no-store`, `noindex`,
-`no-referrer`, `frame-ancestors 'none'`, strips conditional-GET headers, verifies
-the grant before any network call, and maps failures to 401 (invalid/expired
-scope), 404 (missing record) and 503 (unconfigured or upstream failure). Override
-`render_preview_error` for localized host pages.
+published rendering identical. For a DatoCMS **single-instance** model, pass its
+GraphQL root and `singleton: true`; the client queries by locale only and
+verifies the returned id instead of using an item filter:
+
+```ruby
+@homepage = Homepage.new(
+  cms_id: preview_scope["cms_id"], locale: preview_scope["locale"],
+  cms_record: preview_record(model: "homepage", root: "homepage", singleton: true,
+    fields: HomepageQuery.fields)
+)
+```
+
+Use `root:` when the generated GraphQL field differs from the model key (for
+example `media_information` → `mediaInformation`). The concern sets `no-store`,
+`noindex`, `no-referrer`, `frame-ancestors 'none'`, strips conditional-GET
+headers, verifies the grant before any network call, and maps failures to 401
+(invalid/expired scope), 404 (missing record) and 503 (unconfigured or upstream
+failure). Override `render_preview_error` for localized host pages.
 
 ## Plugin link issuer (optional)
 

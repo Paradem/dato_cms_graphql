@@ -9,7 +9,7 @@ class PreviewTest < Minitest::Test
   Errors = Struct.new(:all)
 
   class FakeGraphQL
-    attr_reader :documents
+    attr_reader :documents, :variables
 
     def initialize(response)
       @response = response
@@ -22,8 +22,7 @@ class PreviewTest < Minitest::Test
     end
 
     def query(_document, variables:)
-      raise "variables must bind id and locale" unless variables.keys.sort == %i[id locale]
-
+      @variables = variables
       @response
     end
   end
@@ -35,7 +34,7 @@ class PreviewTest < Minitest::Test
     @configuration.secret = "preview-secret-" + "a" * 32
     @configuration.api_token = "draft-read-only-token"
     @configuration.base_url = "https://preview.example.com"
-    @configuration.models = %w[article page]
+    @configuration.models = %w[article page homepage]
     @configuration.locales = %w[en fr]
     @configuration.ttl = 900
     @configuration.verifier = ActiveSupport::MessageVerifier.new("v" * 64, digest: "SHA256")
@@ -133,6 +132,24 @@ class PreviewTest < Minitest::Test
     assert_includes document, "article(filter: {id: {eq: $id}}, locale: $locale, fallbackLocales: [])"
     assert_includes document, "id title"
     assert_equal 1, graphql.documents.length
+    assert_equal({id: "draft-1", locale: "en"}, graphql.variables)
+  end
+
+  def test_fetch_supports_singleton_models_by_locale_and_verifies_the_id
+    graphql = FakeGraphQL.new(Response.new({"homepage" => {"id" => "draft-1", "someField" => "saved"}}, Errors.new([])))
+    payload = client(graphql).fetch(model: "homepage", root: "homepage", fields: "id title",
+      cms_id: "draft-1", locale: "en", singleton: true)
+    assert_equal({"id" => "draft-1", "some_field" => "saved"}, payload)
+    document = graphql.documents.first
+    assert_includes document, "homepage(locale: $locale, fallbackLocales: [])"
+    refute_includes document, "filter:"
+    assert_equal({locale: "en"}, graphql.variables)
+
+    mismatch = FakeGraphQL.new(Response.new({"homepage" => {"id" => "other"}}, Errors.new([])))
+    assert_raises(ParademCmsSite::Preview::Unavailable) do
+      client(mismatch).fetch(model: "homepage", root: "homepage", fields: "id",
+        cms_id: "draft-1", locale: "en", singleton: true)
+    end
   end
 
   def test_fetch_maps_missing_errors_and_network_failures

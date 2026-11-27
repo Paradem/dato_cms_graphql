@@ -5,6 +5,10 @@
   source), HTTPS is required, open/read/write timeouts are bounded, and non-2xx
   or transport failures are logged without the URL/token and returned as `false`
   so they cannot fail a committed cache refresh.
+- Allow saved-draft preview to fetch DatoCMS single-instance models by locale
+  with `singleton: true` (and an explicit `root:` when the field is camel-cased).
+  The response id is still checked against the grant; collection models keep
+  the existing id-filter query.
 - Share saved-draft preview: a project-scoped `ParademCmsSite::Preview::Configuration`
   (models, locales, TTL, signing verifier, plugin origin), short-lived scoped grant,
   draft-only transport with its own read-only credential and explicit environment,
