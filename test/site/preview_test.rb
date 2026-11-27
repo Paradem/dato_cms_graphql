@@ -187,6 +187,13 @@ class PreviewTest < Minitest::Test
     assert_empty graphql.documents
   end
 
+  def test_client_allows_dynamic_queries_for_host_field_selections
+    schema = GraphQL::Schema.from_definition("type Query { article: String }")
+    graphql = GraphQL::Client.new(schema: schema)
+    client(graphql)
+    assert graphql.allow_dynamic_queries
+  end
+
   def test_client_refuses_unconfigured_or_invalid_environment
     @configuration.api_token = nil
     assert_raises(ParademCmsSite::Preview::Unavailable) do

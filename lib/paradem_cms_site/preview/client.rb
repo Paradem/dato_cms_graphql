@@ -42,6 +42,8 @@ module ParademCmsSite
           schema: schema,
           execute: HTTP.new(api_token: configuration.api_token_value, environment: environment)
         )
+        # Host query fields make each preview document dynamic by design.
+        @graphql.allow_dynamic_queries = true if @graphql.respond_to?(:allow_dynamic_queries=)
       end
 
       # Returns the saved record payload as an underscored hash. The host builds
