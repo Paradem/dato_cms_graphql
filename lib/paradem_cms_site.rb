@@ -8,5 +8,6 @@ end
 
 require_relative "paradem_cms_site/plain_data"
 require_relative "paradem_cms_site/manifest"
+require_relative "paradem_cms_site/deploy_notifier"
 require_relative "paradem_cms_site/doctor"
 require_relative "paradem_cms_site/railtie" if defined?(::Rails::Railtie)

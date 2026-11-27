@@ -61,6 +61,30 @@ rejection returns 503. Context configuration errors are not silently accepted.
 Use an asynchronous, production-appropriate ActiveJob adapter. File-backed
 SQLite refreshes share database/table OS coordination across CLI, boot and jobs.
 
+## Deployment-result notifications
+
+A host that reports deployment results back to DatoCMS can use the shared
+transport from its existing callbacks:
+
+```ruby
+config.after_sync = ->(_result, context) do
+  ParademCmsSite::DeployNotifier.call(status: "success") if context["source"] == "webhook"
+end
+config.on_error = ->(_error, context) do
+  ParademCmsSite::DeployNotifier.call(status: "error") if context["source"] == "webhook"
+end
+```
+
+Set the owner-managed project endpoint as `DATO_DEPLOY_RESULT_URL` (or pass
+`url:`); the URL path token is the authorization and belongs in secret
+configuration, not source. The notifier requires HTTPS, applies explicit
+open/read/write timeouts (five seconds by default, or `timeout:`), checks the
+response status, and logs only the failure class or HTTP status — never the URL
+or token. Missing configuration, non-2xx responses and transport failures return
+`false` instead of raising, so notification trouble cannot turn a committed
+refresh into a failed one. A blank URL is a logged no-op; do not call it if the
+project does not use DatoCMS deploy results.
+
 ## Jobs and compatibility
 
 `RefreshJob` retries `Sync::LockTimeout` with polynomial backoff, up to five

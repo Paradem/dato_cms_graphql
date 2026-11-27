@@ -35,6 +35,7 @@ class DistributionTest < Minitest::Test
   def test_package_includes_all_integration_entry_points_and_no_private_or_development_files
     files = specification.files
     %w[lib/paradem_cms_site.rb lib/paradem_cms_site/rails/installation.rb
+      lib/paradem_cms_site/deploy_notifier.rb
       lib/paradem_cms_site/tasks.rake lib/generators/paradem_cms_site/install/install_generator.rb
       lib/generators/paradem_cms_site/base.rb
       lib/generators/paradem_cms_site/resource/resource_generator.rb

@@ -1,5 +1,10 @@
 ## [0.7.0] - Unreleased
 
+- Add `ParademCmsSite::DeployNotifier` for reporting DatoCMS deployment results.
+  The endpoint comes from `DATO_DEPLOY_RESULT_URL` or an explicit `url:` (never
+  source), HTTPS is required, open/read/write timeouts are bounded, and non-2xx
+  or transport failures are logged without the URL/token and returned as `false`
+  so they cannot fail a committed cache refresh.
 - Share saved-draft preview: a project-scoped `ParademCmsSite::Preview::Configuration`
   (models, locales, TTL, signing verifier, plugin origin), short-lived scoped grant,
   draft-only transport with its own read-only credential and explicit environment,
